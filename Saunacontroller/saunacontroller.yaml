@@ -29,11 +29,6 @@ wifi:
 
 captive_portal:
 
-globals:
-  - id: sauna_temperature
-    type: int
-    initial_value: '80'
-
 switch:
   - name: saunaofen_power
     platform: gpio
@@ -60,3 +55,6 @@ sensor:
   - platform: dallas
     address: 0xd83c01b607bd7a28
     name: "Temperatur Saunacontroller"
+
+web_server:
+  port: 80
