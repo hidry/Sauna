@@ -1,0 +1,38 @@
+esphome:
+  name: "saunacontroller"
+  friendly_name: "saunacontroller"
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "8wgrgQjoRdijlWCM/Jo1EDzWLlKDxH377agh15Ue/c4="
+
+ota:
+  password: "c8b19d439127f04b1e95812edbde7417"
+
+wifi:
+  ssid: "Susi&Stefan"
+  password: ""
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Esp32-Saunacontroller"
+    password: "WZkaXyGeW2XD"
+
+captive_portal:
+
+switch:
+  - name: saunaofen_power
+    platform: gpio
+    pin: GPIO15
+  - name: saunaverdampfer_power
+    platform: gpio
+    pin: GPIO16
