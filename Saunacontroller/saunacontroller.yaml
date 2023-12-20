@@ -19,15 +19,20 @@ ota:
   password: "c8b19d439127f04b1e95812edbde7417"
 
 wifi:
-  ssid: "Susi&Stefan"
-  password: ""
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    ssid: "Esp32-Saunacontroller"
+    ssid: "saunacontroller"
     password: "WZkaXyGeW2XD"
 
 captive_portal:
+
+globals:
+  - id: sauna_temperature
+    type: int
+    initial_value: '80'
 
 switch:
   - name: saunaofen_power
@@ -36,3 +41,22 @@ switch:
   - name: saunaverdampfer_power
     platform: gpio
     pin: GPIO16
+
+dallas:
+  - pin: GPIO23
+    update_interval: 30s
+    id: "temperature_hub"
+
+sensor:
+  - platform: dallas
+    address: 0x4a3c01b607ccd828
+    name: "Temperatur Sauna Decke"
+  - platform: dallas
+    address: 0x103c01b607f9b228
+    name: "Temperatur Sauna Mitte"
+  - platform: dallas
+    address: 0x703c01b6076f3a28
+    name: "Temperatur Sauna Zwischen Wand und Sauna"
+  - platform: dallas
+    address: 0xd83c01b607bd7a28
+    name: "Temperatur Saunacontroller"
