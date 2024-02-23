@@ -4,19 +4,21 @@
 
 ## Features:
     - Saunaofen mit Verdampfer
-    - Infrarotstrahler
-    - RGB-LED
+    - 2x Infrarotstrahler
+    - RGB-LED-Streifen
+    - 2x Salzkristallleuchte
     - SmartHome-Integration (in Home Assistant)
 
 ## Saunacontroller:
     Hardware
         - ESP32-Microcontroller
-        - 4x DS18B20
+        - 1x DS18B20
         - 4,7k Ohm Widerstand
-        - 5V Netzteil
-        - AM3220 Luftfeuchtesensor
+        - 5V Netzteil 20A 100W
+        - 2x AM2320 Luftfeucht- & Temperatursensor
         - 4x SSR-40-DA
         - 6-fach PCB-LED-Treiberplatine zur Ansteuerung der SSRS
+        - 5m LED Stripes WS2812B IP65
         - ...
 
     Software:
