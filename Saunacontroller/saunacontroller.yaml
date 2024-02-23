@@ -79,12 +79,25 @@ dallas:
 #       name: "Luftfeuchte Sauna Wand"
 #     update_interval: 60s
 
-#LED Stripes
+#LED Stripes - GPI02 & GPIO15
 light:
+  - platform: monochromatic
+    output: gpio_18
+    name: Infrarotstrahler_1
+  - platform: monochromatic
+    output: gpio_19
+    name: Infrarotstrahler_2
   - platform: esp32_rmt_led_strip
     rgb_order: GRB
-    pin: GPIO13
-    num_leds: 15
+    pin: GPIO2
+    num_leds: 300
+    rmt_channel: 0
+    chipset: ws2812
+    name: crystal lamp
+  - platform: esp32_rmt_led_strip
+    rgb_order: GRB
+    pin: GPIO15
+    num_leds: 300
     rmt_channel: 0
     chipset: ws2812
     name: LED_stripe
@@ -125,22 +138,24 @@ light:
           speed: 10
           width: 50
 
-# #Infrarotstrahler - GPIO18 / GPIO19
-# output:
-#   - platform: ac_dimmer
-#     gate_pin: GPIO18
-#     id: gpio_18
-#     zero_cross_pin:
-#       number: GPIO19
-#       mode:
-#         input: true
-#       inverted: yes
-
-# light:
-#   - platform: monochromatic
-#     output: gpio_18
-#     name: Infrarotstrahler_1
-#     default_transition_length: 0s
+#Infrarotstrahler - GPIO18 / GPIO19
+output:
+  - platform: ac_dimmer
+    gate_pin: GPIO18
+    id: gpio_18
+    zero_cross_pin:
+      number: GPIO5
+      mode:
+        input: true
+      inverted: yes
+  - platform: ac_dimmer
+    gate_pin: GPIO19
+    id: gpio_19
+    zero_cross_pin:
+      number: GPIO9
+      mode:
+        input: true
+      inverted: yes
 
 # binary_sensor:
 #   - platform: gpio
