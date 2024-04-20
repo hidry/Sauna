@@ -15,7 +15,7 @@
         - 1x DS18B20
         - 1x 4,7k Ohm Widerstand
         - 1x 5V Netzteil 20A 100W
-        - 2x AM2320 Luftfeucht- & Temperatursensor
+        - 1x AM2320 Luftfeucht- & Temperatursensor
         - 4x SSR-40-DA
         - 1x 6-fach PCB-LED-Treiberplatine zur Ansteuerung der SSRS
         - 1x 5m LED Stripes WS2812B IP65

@@ -167,3 +167,7 @@ output:
 #           pullup: true
 #       #inverted: true
 #     name: "Wasserfüllstand Saunaverdampfer"
+
+text_sensor:
+  - platform: version
+    name: "ESPHome Version"
