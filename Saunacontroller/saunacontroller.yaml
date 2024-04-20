@@ -51,10 +51,6 @@ i2c:
     sda: GPIO33
     scl: GPIO32
     scan: True
-# - id: i2c_bus_b
-#   sda: GPIO21
-#   scl: GPIO22
-#   scan: True
 
 sensor:
   - platform: dallas
@@ -69,16 +65,6 @@ sensor:
     humidity:
       name: "Luftfeuchte Sauna"
     update_interval: 60s
-  # - platform: am2320
-  #   i2c_id: i2c_bus_b
-  #   setup_priority: -1000
-  #   address: 0x5C
-  #   temperature:
-  #     name: "Temperatur Sauna Wand"
-  #   humidity:
-  #     name: "Luftfeuchte Sauna Wand"
-  #   update_interval: 60s
-
 
 #LED Stripes - GPI02 & GPIO15
 light:
@@ -157,16 +143,6 @@ output:
       mode:
         input: true
       inverted: yes
-
-# binary_sensor:
-#   - platform: gpio
-#     pin:
-#       number: GPIO18
-#       mode:
-#           input: true
-#           pullup: true
-#       #inverted: true
-#     name: "Wasserfüllstand Saunaverdampfer"
 
 text_sensor:
   - platform: version
