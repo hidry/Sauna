@@ -16,6 +16,7 @@ api:
     key: !secret api_encryption_key
 
 ota:
+  platform: esphome
   password: !secret ota_password
 
 wifi:
@@ -40,9 +41,10 @@ switch:
     platform: gpio
     pin: GPIO17
 
-dallas:
+one_wire:
   - pin: GPIO23
-    update_interval: 30s
+    platform: gpio
+    #update_interval: 30s
     id: "temperature_hub"
 
 # Temperatur / Luftfeuchtesensor müssen angeschlossen sein, sonst kein Booten möglich: Recovery failed, SCL is held low on the bus
@@ -50,10 +52,10 @@ i2c:
   - id: i2c_bus_a
     sda: GPIO33
     scl: GPIO32
-    scan: True
+    scan: False
 
 sensor:
-  - platform: dallas
+  - platform: dallas_temp
     address: 0x4a3c01b607ccd828
     name: "Temperatur Steuergerät"
   - platform: am2320
@@ -64,7 +66,7 @@ sensor:
       name: "Temperatur Sauna"
     humidity:
       name: "Luftfeuchte Sauna"
-    update_interval: 60s
+    update_interval: 180s
 
 #LED Stripes - GPI02 & GPIO15
 light:
@@ -135,14 +137,16 @@ output:
       mode:
         input: true
       inverted: yes
+      allow_other_uses: true
   - platform: ac_dimmer
     gate_pin: GPIO19
     id: gpio_19
     zero_cross_pin:
-      number: GPIO9
+      number: GPIO5
       mode:
         input: true
       inverted: yes
+      allow_other_uses: true
 
 text_sensor:
   - platform: version
