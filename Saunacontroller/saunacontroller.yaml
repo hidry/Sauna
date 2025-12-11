@@ -49,6 +49,8 @@ switch:
   - name: "Saunaverdampfer"
     platform: gpio
     pin: GPIO17
+  - platform: restart
+    name: "ESP Restart"
 
 one_wire:
   - pin: GPIO23
@@ -99,14 +101,14 @@ light:
     rgb_order: BGR
     pin: GPIO2
     num_leds: 16
-    rmt_channel: 0
+    #rmt_channel: 0
     chipset: ws2812
     name: "LED Salzkristall-Leuchten"
   - platform: esp32_rmt_led_strip
     rgb_order: GRB
     pin: GPIO15
     num_leds: 213
-    rmt_channel: 1
+    #rmt_channel: 1
     chipset: ws2812
     name: "LED Streifen"
   #   effects:
