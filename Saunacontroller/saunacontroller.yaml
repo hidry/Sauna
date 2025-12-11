@@ -7,8 +7,13 @@ esp32:
   framework:
     type: arduino
 
-# Enable logging
+# Example configuration entry
+debug:
+  update_interval: 5s
+
+# Logger must be at least debug (default)
 logger:
+  level: debug
 
 # Enable Home Assistant API
 api:
@@ -30,6 +35,10 @@ wifi:
 
 web_server:
   port: 80
+  version: 3
+  auth: 
+    username: !secret saunacontroller_webserver_user
+    password: !secret saunacontroller_webserver_password
 
 captive_portal:
 
@@ -67,6 +76,16 @@ sensor:
     humidity:
       name: "Luftfeuchte Sauna"
     update_interval: 180s
+  - platform: uptime
+    type: seconds
+    name: "Uptime Sensor"
+  - platform: debug
+    free:
+      name: "Heap Free"
+    block:
+      name: "Heap Max Block"
+    loop_time:
+      name: "Loop Time"
 
 #LED Stripes - GPI02 & GPIO15
 light:
@@ -151,3 +170,8 @@ output:
 text_sensor:
   - platform: version
     name: "ESPHome Version"
+  - platform: debug
+    device:
+      name: "Device Info"
+    reset_reason:
+      name: "Reset Reason"
