@@ -1,0 +1,19 @@
+climate:
+  - platform: generic_thermostat
+    name: Sauna
+    unique_id: climate_sauna
+    heater: switch.saunacontroller_saunaofen
+    target_sensor: sensor.saunacontroller_temperatur_sauna
+    min_temp: 20
+    max_temp: 90
+    target_temp: 80.0
+    target_temp_step: 1.0
+
+generic_hygrostat:
+  - name: Sauna
+    unique_id: hygrostat_sauna
+    humidifier: switch.saunacontroller_saunaverdampfer
+    target_sensor: sensor.saunacontroller_luftfeuchte_sauna
+    min_humidity: 30
+    max_humidity: 70
+    target_humidity: 50
