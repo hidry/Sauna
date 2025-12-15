@@ -30,8 +30,8 @@ wifi:
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    ssid: "saunacontroller"
-    password: "WZkaXyGeW2XD"
+    ssid: !secret saunacontroller_ap_ssid
+    password: !secret saunacontroller_ap_password
 
 web_server:
   port: 80
