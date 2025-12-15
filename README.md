@@ -35,3 +35,9 @@
         - Kompilieren mit "esphome compile .\saunacontroller.yaml"
         - Flashen des ESP32 mit der Datei "firmware.bin" mit esphome-flasher (initial) oder mit OTA über http://saunacontroller.local/
             - (https://web.esphome.io/ funktioniert bei mir nicht)
+
+## Verdrahtung:
+
+Das ESP32-Board ist wegen besserer Konnektivität auf eine Leiterplatte mit Schraubanschlussklemmen gelötet:
+
+<img width="693" height="361" alt="image" src="https://github.com/user-attachments/assets/2780636e-2531-49ff-879d-f495164c48d7" />
