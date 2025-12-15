@@ -11,15 +11,15 @@
 
 ## Saunacontroller:
     Hardware
-        - 1x ESP32-Microcontroller
+        - 1x ESP32-Microcontroller (https://www.amazon.de/dp/B071P98VTG?ref_=ppx_hzsearch_conn_dt_b_fed_asin_title_2&th=1)
         - 1x DS18B20
         - 1x 4,7k Ohm Widerstand
         - 1x 5V Netzteil 20A 100W
         - 1x AM2320 Luftfeucht- & Temperatursensor
         - 4x SSR-40-DA (nicht optimal, aber hab ich noch rumliegen)
-        - 1x 6-fach PCB-LED-Treiberplatine zur Ansteuerung der SSRS
-        - 1x 5m LED Stripes WS2812B IP65
-        - 2x RobotDYN PWM AC-Dimmer
+        - 1x 6-fach PCB-LED-Treiberplatine zur Ansteuerung der SSRS (https://www.amazon.de/dp/B0CCW4G5Z5?ref_=ppx_hzsearch_conn_dt_b_fed_asin_title_2)
+        - 1x 5m LED Stripes WS2812B IP65 
+        - 2x RobotDYN PWM AC-Dimmer (https://www.amazon.de/dp/B07KDNMTSF?ref_=ppx_hzsearch_conn_dt_b_fed_asin_title_1)
         - ...
 
     Software:
