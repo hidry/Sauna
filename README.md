@@ -40,4 +40,5 @@
 
 Das ESP32-Board ist wegen besserer Konnektivität auf eine Leiterplatte mit Schraubanschlussklemmen gelötet:
 
-<img width="693" height="361" alt="image" src="https://github.com/user-attachments/assets/2780636e-2531-49ff-879d-f495164c48d7" />
+<img width="786" height="341" alt="image" src="https://github.com/user-attachments/assets/79d60207-97eb-4087-b95c-302b3d4d3e65" />
+
