@@ -43,14 +43,34 @@ web_server:
 captive_portal:
 
 switch:
-  - name: "Saunaofen"
-    platform: gpio
+  - platform: gpio
+    id: saunaofen
+    name: "Saunaofen"
     pin: GPIO16
-  - name: "Saunaverdampfer"
-    platform: gpio
+    restore_mode: ALWAYS_OFF
+  - platform: gpio
+    id: saunaverdampfer
+    name: "Saunaverdampfer"
     pin: GPIO17
+    restore_mode: ALWAYS_OFF
   - platform: restart
     name: "ESP Restart"
+  - platform: template
+    id: hygrostat_switch
+    name: "Hygrostat"
+    icon: "mdi:water-percent"
+    restore_mode: ALWAYS_OFF
+    lambda: |-
+      return id(hygrostat_active);
+    turn_on_action:
+      - globals.set:
+          id: hygrostat_active
+          value: 'true'
+    turn_off_action:
+      - globals.set:
+          id: hygrostat_active
+          value: 'false'
+      - switch.turn_off: saunaverdampfer
 
 one_wire:
   - pin: GPIO23
@@ -74,8 +94,10 @@ sensor:
     setup_priority: -1000
     address: 0x5C
     temperature:
+      id: temperatur_sauna
       name: "Temperatur Sauna"
     humidity:
+      id: luftfeuchte_sauna
       name: "Luftfeuchte Sauna"
     update_interval: 180s
   - platform: uptime
@@ -177,3 +199,93 @@ text_sensor:
       name: "Device Info"
     reset_reason:
       name: "Reset Reason"
+
+# Standalone Sauna Controller (ohne Home Assistant)
+climate:
+  - platform: thermostat
+    id: sauna_thermostat
+    name: "Sauna Thermostat"
+    sensor: temperatur_sauna
+    default_preset: Home
+    on_boot_restore_from: default_preset
+    preset:
+      - name: Home
+        default_target_temperature_low: 80
+    min_heating_off_time: 0s
+    min_heating_run_time: 0s
+    heat_deadband: 0.3
+    heat_overrun: 0.3
+    visual:
+      min_temperature: 20
+      max_temperature: 90
+      temperature_step: 1.0
+    heat_action:
+      - switch.turn_on: saunaofen
+    idle_action:
+      - switch.turn_off: saunaofen
+    startup_delay: true
+    default_mode: "off"
+
+number:
+  - platform: template
+    id: target_humidity
+    name: "Ziel-Luftfeuchtigkeit"
+    unit_of_measurement: "%"
+    icon: "mdi:water-percent"
+    min_value: 30
+    max_value: 70
+    step: 1
+    initial_value: 50
+    restore_value: true
+    optimistic: true
+
+  - platform: template
+    id: hygrostat_dry_tolerance
+    name: "Hygrostat Toleranz (trocken)"
+    unit_of_measurement: "%"
+    icon: "mdi:arrow-down"
+    min_value: 1
+    max_value: 10
+    step: 1
+    initial_value: 3
+    restore_value: true
+    optimistic: true
+
+  - platform: template
+    id: hygrostat_wet_tolerance
+    name: "Hygrostat Toleranz (feucht)"
+    unit_of_measurement: "%"
+    icon: "mdi:arrow-up"
+    min_value: 1
+    max_value: 10
+    step: 1
+    initial_value: 3
+    restore_value: true
+    optimistic: true
+
+globals:
+  - id: hygrostat_active
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+
+interval:
+  - interval: 10s
+    then:
+      - lambda: |-
+          if (!id(hygrostat_active)) {
+            return;
+          }
+          if (!id(luftfeuchte_sauna).has_state()) {
+            return;
+          }
+          float current = id(luftfeuchte_sauna).state;
+          float target = id(target_humidity).state;
+          float dry_tol = id(hygrostat_dry_tolerance).state;
+          float wet_tol = id(hygrostat_wet_tolerance).state;
+
+          if (current < target - dry_tol) {
+            id(saunaverdampfer).turn_on();
+          } else if (current > target + wet_tol) {
+            id(saunaverdampfer).turn_off();
+          }
