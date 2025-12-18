@@ -28,6 +28,11 @@
         - alternativ installation auf PC
             - installiertes Python und ESPHome: https://esphome.io/guides/installing_esphome.html
             - esphome-flasher: https://github.com/esphome/esphome-flasher
+        - **GitHub Codespaces** (keine lokale Installation nötig):
+            - Repository in Codespaces öffnen (Code -> Codespaces -> Create codespace)
+            - ESPHome Dashboard startet automatisch auf Port 6052
+            - Firmware kompilieren und als .bin herunterladen
+            - Flashen via https://web.esphome.io/ oder OTA
 
     Vorgehensweise Firmware flashen über HomeAssistant
         - ESPHome-AddOn -> saunacontroller -> Edit -> Install -> Wirelessly
