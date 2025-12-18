@@ -213,6 +213,7 @@ climate:
         default_target_temperature_low: 80
     min_heating_off_time: 0s
     min_heating_run_time: 0s
+    min_idle_time: 0s
     heat_deadband: 0.3
     heat_overrun: 0.3
     visual:
