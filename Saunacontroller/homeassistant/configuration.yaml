@@ -1,19 +1,35 @@
-climate:
-  - platform: generic_thermostat
-    name: Sauna
-    unique_id: climate_sauna
-    heater: switch.saunacontroller_saunaofen
-    target_sensor: sensor.saunacontroller_temperatur_sauna
-    min_temp: 20
-    max_temp: 90
-    target_temp: 80.0
-    target_temp_step: 1.0
+# Sauna-Steuerung läuft jetzt standalone auf dem ESP32.
+# Home Assistant nutzt direkt die ESP-Entities:
+#
+# Thermostat:
+#   - climate.saunacontroller_sauna_thermostat (Ein/Aus + Zieltemperatur)
+#
+# Hygrostat:
+#   - switch.saunacontroller_hygrostat (Ein/Aus)
+#   - number.saunacontroller_ziel_luftfeuchtigkeit (Sollwert)
+#
+# Sensoren:
+#   - sensor.saunacontroller_temperatur_sauna
+#   - sensor.saunacontroller_luftfeuchte_sauna
+#
+# Die folgenden Konfigurationen sind nicht mehr nötig:
 
-generic_hygrostat:
-  - name: Sauna
-    unique_id: hygrostat_sauna
-    humidifier: switch.saunacontroller_saunaverdampfer
-    target_sensor: sensor.saunacontroller_luftfeuchte_sauna
-    min_humidity: 30
-    max_humidity: 70
-    target_humidity: 50
+# climate:
+#   - platform: generic_thermostat
+#     name: Sauna
+#     unique_id: climate_sauna
+#     heater: switch.saunacontroller_saunaofen
+#     target_sensor: sensor.saunacontroller_temperatur_sauna
+#     min_temp: 20
+#     max_temp: 90
+#     target_temp: 80.0
+#     target_temp_step: 1.0
+
+# generic_hygrostat:
+#   - name: Sauna
+#     unique_id: hygrostat_sauna
+#     humidifier: switch.saunacontroller_saunaverdampfer
+#     target_sensor: sensor.saunacontroller_luftfeuchte_sauna
+#     min_humidity: 30
+#     max_humidity: 70
+#     target_humidity: 50
