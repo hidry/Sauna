@@ -1,6 +1,12 @@
 esphome:
   name: "saunacontroller"
   friendly_name: "saunacontroller"
+  on_boot:
+    priority: -100
+    then:
+      - climate.control:
+          id: sauna_thermostat
+          mode: "OFF"
 
 esp32:
   board: esp32dev
@@ -225,7 +231,6 @@ climate:
     idle_action:
       - switch.turn_off: saunaofen
     startup_delay: true
-    default_mode: "off"
 
 number:
   - platform: template
