@@ -53,7 +53,7 @@ Der ESP32 regelt autonom:
 1. **Thermostat** (ESPHome Climate Component)
    - Sensor: `temperatur_sauna` (AM2320)
    - Aktor: `saunaofen` (GPIO16, internal)
-   - Hysterese: ±0.3°C
+   - Hysterese: ±3°C (schont Relais, passt zur Trägheit der Sauna)
    - Default: 80°C, startet im OFF-Modus
 
 2. **Hygrostat** (Custom Implementation)

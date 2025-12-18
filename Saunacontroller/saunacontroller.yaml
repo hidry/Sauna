@@ -286,8 +286,8 @@ climate:
     min_heating_off_time: 0s
     min_heating_run_time: 0s
     min_idle_time: 0s
-    heat_deadband: 0.3
-    heat_overrun: 0.3
+    heat_deadband: 3.0
+    heat_overrun: 3.0
     visual:
       min_temperature: 20
       max_temperature: 90

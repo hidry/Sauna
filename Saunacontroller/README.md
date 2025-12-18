@@ -89,8 +89,8 @@ Das Webinterface zeigt alle Steuerungselemente in Gruppen:
 ## Sicherheit
 
 - **Nach Neustart:** Alle Regler starten im AUS-Zustand
-- **Hysterese:** Verhindert häufiges Schalten
-  - Temperatur: ±0.3°C
+- **Hysterese:** Verhindert häufiges Schalten, schont Relais
+  - Temperatur: ±3°C (bei 80°C Ziel: Ofen EIN <77°C, AUS >83°C)
   - Luftfeuchtigkeit: ±3%
 
 ## Home Assistant (optional)
