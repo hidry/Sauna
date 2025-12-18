@@ -42,9 +42,25 @@ wifi:
 web_server:
   port: 80
   version: 3
-  auth: 
+  auth:
     username: !secret saunacontroller_webserver_user
     password: !secret saunacontroller_webserver_password
+  sorting_groups:
+    - id: group_sauna
+      name: "Sauna"
+      sorting_weight: 10
+    - id: group_verdampfer
+      name: "Verdampfer"
+      sorting_weight: 20
+    - id: group_infrarot
+      name: "Infrarot"
+      sorting_weight: 30
+    - id: group_beleuchtung
+      name: "Beleuchtung"
+      sorting_weight: 40
+    - id: group_system
+      name: "System"
+      sorting_weight: 50
 
 captive_portal:
 
@@ -61,11 +77,17 @@ switch:
     internal: true
   - platform: restart
     name: "ESP Restart"
+    web_server:
+      sorting_group_id: group_system
+      sorting_weight: 10
   - platform: template
     id: hygrostat_switch
     name: "Hygrostat"
     icon: "mdi:water-percent"
     restore_mode: ALWAYS_OFF
+    web_server:
+      sorting_group_id: group_verdampfer
+      sorting_weight: 10
     lambda: |-
       return id(hygrostat_active);
     turn_on_action:
@@ -95,6 +117,9 @@ sensor:
   - platform: dallas_temp
     address: 0x4a3c01b607ccd828
     name: "Temperatur Steuergerät"
+    web_server:
+      sorting_group_id: group_system
+      sorting_weight: 20
   - platform: am2320
     i2c_id: i2c_bus_a
     setup_priority: -1000
@@ -103,30 +128,54 @@ sensor:
       id: temperatur_sauna
       name: "Temperatur Sauna"
       accuracy_decimals: 1
+      web_server:
+        sorting_group_id: group_sauna
+        sorting_weight: 20
     humidity:
       id: luftfeuchte_sauna
       name: "Luftfeuchte Sauna"
       accuracy_decimals: 1
+      web_server:
+        sorting_group_id: group_verdampfer
+        sorting_weight: 30
     update_interval: 30s
   - platform: uptime
     type: seconds
     name: "Uptime Sensor"
+    web_server:
+      sorting_group_id: group_system
+      sorting_weight: 30
   - platform: debug
     free:
       name: "Heap Free"
+      web_server:
+        sorting_group_id: group_system
+        sorting_weight: 40
     block:
       name: "Heap Max Block"
+      web_server:
+        sorting_group_id: group_system
+        sorting_weight: 50
     loop_time:
       name: "Loop Time"
+      web_server:
+        sorting_group_id: group_system
+        sorting_weight: 60
 
 #LED Stripes - GPI02 & GPIO15
 light:
   - platform: monochromatic
     output: gpio_18
     name: "Infrarotstrahler 1"
+    web_server:
+      sorting_group_id: group_infrarot
+      sorting_weight: 10
   - platform: monochromatic
     output: gpio_19
     name: "Infrarotstrahler 2"
+    web_server:
+      sorting_group_id: group_infrarot
+      sorting_weight: 20
   - platform: esp32_rmt_led_strip
     rgb_order: BGR
     pin: GPIO2
@@ -134,6 +183,9 @@ light:
     #rmt_channel: 0
     chipset: ws2812
     name: "LED Salzkristall-Leuchten"
+    web_server:
+      sorting_group_id: group_beleuchtung
+      sorting_weight: 10
   - platform: esp32_rmt_led_strip
     rgb_order: GRB
     pin: GPIO15
@@ -141,6 +193,9 @@ light:
     #rmt_channel: 1
     chipset: ws2812
     name: "LED Streifen"
+    web_server:
+      sorting_group_id: group_beleuchtung
+      sorting_weight: 20
   #   effects:
   #     - pulse:
   #         name: "Fast Pulse"
@@ -202,11 +257,20 @@ output:
 text_sensor:
   - platform: version
     name: "ESPHome Version"
+    web_server:
+      sorting_group_id: group_system
+      sorting_weight: 70
   - platform: debug
     device:
       name: "Device Info"
+      web_server:
+        sorting_group_id: group_system
+        sorting_weight: 80
     reset_reason:
       name: "Reset Reason"
+      web_server:
+        sorting_group_id: group_system
+        sorting_weight: 90
 
 # Standalone Sauna Controller (ohne Home Assistant)
 climate:
@@ -233,6 +297,9 @@ climate:
     idle_action:
       - switch.turn_off: saunaofen
     startup_delay: true
+    web_server:
+      sorting_group_id: group_sauna
+      sorting_weight: 10
 
 number:
   - platform: template
@@ -246,6 +313,9 @@ number:
     initial_value: 50
     restore_value: true
     optimistic: true
+    web_server:
+      sorting_group_id: group_verdampfer
+      sorting_weight: 20
 
   - platform: template
     id: hygrostat_dry_tolerance
@@ -258,6 +328,9 @@ number:
     initial_value: 3
     restore_value: true
     optimistic: true
+    web_server:
+      sorting_group_id: group_verdampfer
+      sorting_weight: 40
 
   - platform: template
     id: hygrostat_wet_tolerance
@@ -270,6 +343,9 @@ number:
     initial_value: 3
     restore_value: true
     optimistic: true
+    web_server:
+      sorting_group_id: group_verdampfer
+      sorting_weight: 50
 
 globals:
   - id: hygrostat_active
