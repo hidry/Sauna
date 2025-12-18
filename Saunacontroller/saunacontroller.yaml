@@ -51,14 +51,14 @@ captive_portal:
 switch:
   - platform: gpio
     id: saunaofen
-    name: "Saunaofen"
     pin: GPIO16
     restore_mode: ALWAYS_OFF
+    internal: true
   - platform: gpio
     id: saunaverdampfer
-    name: "Saunaverdampfer"
     pin: GPIO17
     restore_mode: ALWAYS_OFF
+    internal: true
   - platform: restart
     name: "ESP Restart"
   - platform: template
