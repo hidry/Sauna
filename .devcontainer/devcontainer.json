@@ -1,0 +1,37 @@
+{
+  "name": "ESPHome Sauna Controller",
+  "image": "ghcr.io/esphome/esphome:stable",
+
+  "forwardPorts": [6052],
+  "portsAttributes": {
+    "6052": {
+      "label": "ESPHome Dashboard",
+      "onAutoForward": "openBrowser"
+    }
+  },
+
+  "postStartCommand": "esphome dashboard /workspaces/Sauna/Saunacontroller --port 6052",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "esphome.esphome-vscode",
+        "redhat.vscode-yaml"
+      ],
+      "settings": {
+        "yaml.schemas": {
+          "https://json.schemastore.org/esphome.json": "*.yaml"
+        },
+        "files.associations": {
+          "*.yaml": "yaml"
+        }
+      }
+    }
+  },
+
+  "containerEnv": {
+    "ESPHOME_DASHBOARD_USE_PING": "true"
+  },
+
+  "remoteUser": "root"
+}
