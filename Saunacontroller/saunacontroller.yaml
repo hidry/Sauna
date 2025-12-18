@@ -102,9 +102,11 @@ sensor:
     temperature:
       id: temperatur_sauna
       name: "Temperatur Sauna"
+      accuracy_decimals: 1
     humidity:
       id: luftfeuchte_sauna
       name: "Luftfeuchte Sauna"
+      accuracy_decimals: 1
     update_interval: 30s
   - platform: uptime
     type: seconds
