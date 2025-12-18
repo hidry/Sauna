@@ -105,7 +105,7 @@ sensor:
     humidity:
       id: luftfeuchte_sauna
       name: "Luftfeuchte Sauna"
-    update_interval: 180s
+    update_interval: 30s
   - platform: uptime
     type: seconds
     name: "Uptime Sensor"
