@@ -3,11 +3,12 @@
 ## Ziel: Eine selbst gebaute Sauna - von der Planung bis zur ersten Inbetriebnahme
 
 ## Features:
-    - Saunaofen mit Verdampfer
-    - 2x Infrarotstrahler
-    - RGB-LED-Streifen
-    - 2x Salzkristallleuchte
-    - SmartHome-Integration (in Home Assistant)
+- Saunaofen mit Verdampfer
+- 2x Infrarotstrahler
+- RGB-LED-Streifen
+- 2x Salzkristallleuchte
+- **Standalone-Betrieb** (funktioniert ohne Home Assistant)
+- **Optionale Home Assistant Integration**
 
 ## Saunacontroller:
     Hardware
@@ -40,6 +41,16 @@
         - Kompilieren mit "esphome compile .\saunacontroller.yaml"
         - Flashen des ESP32 mit der Datei "firmware.bin" mit esphome-flasher (initial) oder mit OTA über http://saunacontroller.local/
             - (https://web.esphome.io/ funktioniert bei mir nicht)
+
+## Steuerung
+
+Der ESP32 regelt autonom (ohne Home Assistant):
+- **Thermostat**: Temperatur 20-90°C, Hysterese ±3°C
+- **Hygrostat**: Luftfeuchtigkeit 30-70%, Hysterese ±3%
+
+Bedienung über Webinterface: `http://saunacontroller.local`
+
+→ Details zur Bedienung siehe [Saunacontroller/README.md](Saunacontroller/README.md)
 
 ## Verdrahtung:
 
