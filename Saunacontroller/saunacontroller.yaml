@@ -7,6 +7,29 @@ esphome:
       - climate.control:
           id: sauna_thermostat
           mode: "OFF"
+      # LED Standard-Farbe auf Lava-Rot setzen (ohne einzuschalten)
+      # Farbe wird kurz gesetzt und sofort ausgeschaltet - Farbwerte bleiben gespeichert
+      # Beim späteren Einschalten erscheint automatisch Lava-Rot
+      - light.turn_on:
+          id: led_salzkristall
+          red: 100%
+          green: 15%
+          blue: 0%
+          brightness: 100%
+          transition_length: 0s
+      - light.turn_off:
+          id: led_salzkristall
+          transition_length: 0s
+      - light.turn_on:
+          id: led_streifen
+          red: 100%
+          green: 15%
+          blue: 0%
+          brightness: 100%
+          transition_length: 0s
+      - light.turn_off:
+          id: led_streifen
+          transition_length: 0s
 
 esp32:
   board: esp32dev
@@ -177,6 +200,7 @@ light:
       sorting_group_id: group_infrarot
       sorting_weight: 20
   - platform: esp32_rmt_led_strip
+    id: led_salzkristall
     rgb_order: BGR
     pin: GPIO2
     num_leds: 16
@@ -187,6 +211,7 @@ light:
       sorting_group_id: group_beleuchtung
       sorting_weight: 10
   - platform: esp32_rmt_led_strip
+    id: led_streifen
     rgb_order: GRB
     pin: GPIO15
     num_leds: 213
