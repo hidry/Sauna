@@ -68,7 +68,7 @@ Das Webinterface zeigt alle Steuerungselemente in Gruppen:
 
 | Gruppe | Funktion |
 |--------|----------|
-| **Sauna** | Thermostat ein/aus, Zieltemperatur einstellen |
+| **Sauna** | Thermostat ein/aus, Zieltemperatur, Restzeit bis Auto-Off |
 | **Verdampfer** | Hygrostat ein/aus, Ziel-Luftfeuchtigkeit einstellen |
 | **Infrarot** | Infrarotstrahler dimmen |
 | **Beleuchtung** | LED-Farben und Helligkeit |
@@ -89,6 +89,10 @@ Das Webinterface zeigt alle Steuerungselemente in Gruppen:
 ## Sicherheit
 
 - **Nach Neustart:** Alle Regler starten im AUS-Zustand, LEDs mit Lava-Rot voreingestellt
+- **Automatische Abschaltung:** Nach 4 Stunden werden Thermostat und
+  Hygrostat automatisch ausgeschaltet (Sicherheits-Timer)
+- **Restzeit-Anzeige:** Im Webinterface zeigt "Sauna Restzeit" die
+  verbleibenden Minuten bis zur automatischen Abschaltung
 - **Hysterese:** Verhindert häufiges Schalten, schont Relais
   - Temperatur: ±3°C (bei 80°C Ziel: Ofen EIN <77°C, AUS >83°C)
   - Luftfeuchtigkeit: ±3%
@@ -103,6 +107,7 @@ switch.saunacontroller_hygrostat
 number.saunacontroller_ziel_luftfeuchtigkeit
 sensor.saunacontroller_temperatur_sauna
 sensor.saunacontroller_luftfeuchte_sauna
+sensor.saunacontroller_sauna_restzeit
 light.saunacontroller_infrarotstrahler_1
 light.saunacontroller_infrarotstrahler_2
 light.saunacontroller_led_salzkristall_leuchten

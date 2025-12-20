@@ -62,6 +62,12 @@ Der ESP32 regelt autonom:
    - Hysterese: ±3%
    - Default: 50%, Interval-basierte Regelung (10s)
 
+3. **Auto-Off Timer** (Sicherheitsabschaltung)
+   - Startet wenn Thermostat ODER Hygrostat aktiviert wird
+   - Nach 4 Stunden: Beide werden automatisch abgeschaltet
+   - Sensor: `sauna_restzeit` zeigt Restzeit in Minuten
+   - Global: `sauna_session_start_time` (millis()-Timestamp)
+
 ### Home Assistant Integration
 
 Die HA API bleibt aktiv. HA nutzt direkt die ESP-Entities:
@@ -74,7 +80,7 @@ Die alte `generic_thermostat`/`generic_hygrostat` Konfiguration ist nicht mehr n
 ## Webserver-Gruppen
 
 Entities sind im Webserver (Port 80) gruppiert:
-1. **Sauna** - Thermostat, Temperatur
+1. **Sauna** - Thermostat, Temperatur, Restzeit
 2. **Verdampfer** - Hygrostat, Ziel-Luftfeuchtigkeit, Luftfeuchte, Toleranzen
 3. **Infrarot** - Infrarotstrahler 1+2
 4. **Beleuchtung** - LED Salzkristall, LED Streifen
@@ -83,6 +89,7 @@ Entities sind im Webserver (Port 80) gruppiert:
 ## Wichtige Hinweise
 
 - **Nach ESP-Neustart:** Alle Regler starten im OFF-Modus (Sicherheit), LEDs mit Lava-Rot voreingestellt
+- **Auto-Off nach 4h:** Thermostat und Hygrostat werden automatisch abgeschaltet (Sicherheitsfeature)
 - **AM2320 Sensor:** Update-Interval 30s, kann bei Problemen erhöht werden
 - **GPIO-Switches:** `saunaofen` und `saunaverdampfer` sind `internal: true` (nicht direkt steuerbar)
 - **secrets.yaml:** Enthält WiFi-Credentials, API-Keys etc. - niemals committen!

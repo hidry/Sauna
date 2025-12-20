@@ -7,6 +7,7 @@
 - 2x Infrarotstrahler
 - RGB-LED-Streifen
 - 2x Salzkristallleuchte
+- **Automatische Sicherheitsabschaltung nach 4 Stunden**
 - **Standalone-Betrieb** (funktioniert ohne Home Assistant)
 - **Optionale Home Assistant Integration**
 
