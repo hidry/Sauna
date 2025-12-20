@@ -88,7 +88,7 @@ Das Webinterface zeigt alle Steuerungselemente in Gruppen:
 
 ## Sicherheit
 
-- **Nach Neustart:** Alle Regler starten im AUS-Zustand
+- **Nach Neustart:** Alle Regler starten im AUS-Zustand, LEDs mit Lava-Rot voreingestellt
 - **Hysterese:** Verhindert häufiges Schalten, schont Relais
   - Temperatur: ±3°C (bei 80°C Ziel: Ofen EIN <77°C, AUS >83°C)
   - Luftfeuchtigkeit: ±3%
