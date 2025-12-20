@@ -88,7 +88,7 @@ Das Webinterface zeigt alle Steuerungselemente in Gruppen:
 
 ## Sicherheit
 
-- **Nach Neustart:** Alle Regler starten im AUS-Zustand
+- **Nach Neustart:** Alle Regler starten im AUS-Zustand, LEDs mit Lava-Rot voreingestellt
 - **Automatische Abschaltung:** Nach 4 Stunden werden Thermostat und
   Hygrostat automatisch ausgeschaltet (Sicherheits-Timer)
 - **Restzeit-Anzeige:** Im Webinterface zeigt "Sauna Restzeit" die

@@ -88,7 +88,7 @@ Entities sind im Webserver (Port 80) gruppiert:
 
 ## Wichtige Hinweise
 
-- **Nach ESP-Neustart:** Alle Regler starten im OFF-Modus (Sicherheit)
+- **Nach ESP-Neustart:** Alle Regler starten im OFF-Modus (Sicherheit), LEDs mit Lava-Rot voreingestellt
 - **Auto-Off nach 4h:** Thermostat und Hygrostat werden automatisch abgeschaltet (Sicherheitsfeature)
 - **AM2320 Sensor:** Update-Interval 30s, kann bei Problemen erhöht werden
 - **GPIO-Switches:** `saunaofen` und `saunaverdampfer` sind `internal: true` (nicht direkt steuerbar)
