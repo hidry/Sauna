@@ -218,6 +218,27 @@ sensor:
       web_server:
         sorting_group_id: group_system
         sorting_weight: 60
+  # Auto-Off Restzeit (aus main)
+  - platform: template
+    id: sauna_restzeit
+    name: "Sauna Restzeit"
+    unit_of_measurement: "min"
+    icon: "mdi:timer-outline"
+    accuracy_decimals: 0
+    update_interval: 10s
+    web_server:
+      sorting_group_id: group_sauna
+      sorting_weight: 15
+    lambda: |-
+      if (id(sauna_session_start_time) == 0) {
+        return 0;
+      }
+      unsigned long elapsed = millis() - id(sauna_session_start_time);
+      unsigned long max_time = 4UL * 60 * 60 * 1000;  // 4h in ms
+      if (elapsed >= max_time) {
+        return 0;
+      }
+      return (max_time - elapsed) / 60000.0;  // Minuten
   # Session-Zähler
   - platform: template
     name: "Sauna Sessions"
@@ -582,6 +603,11 @@ globals:
     type: bool
     restore_value: false
     initial_value: 'false'
+  # Auto-Off Timer (aus main)
+  - id: sauna_session_start_time
+    type: unsigned long
+    restore_value: false
+    initial_value: '0'
   # Session-Zähler (persistent)
   - id: sauna_sessions
     type: int
@@ -647,6 +673,7 @@ globals:
     initial_value: '0'
 
 interval:
+  # Hygrostat-Regelung
   - interval: 10s
     then:
       - lambda: |-
@@ -665,4 +692,32 @@ interval:
             id(saunaverdampfer).turn_on();
           } else if (current > target + wet_tol) {
             id(saunaverdampfer).turn_off();
+          }
+  # Auto-Off nach 4 Stunden
+  - interval: 10s
+    then:
+      - lambda: |-
+          bool session_active =
+            (id(sauna_thermostat).mode != CLIMATE_MODE_OFF) ||
+            id(hygrostat_active);
+
+          if (session_active && id(sauna_session_start_time) == 0) {
+            // Session startet jetzt
+            id(sauna_session_start_time) = millis();
+          }
+          else if (!session_active) {
+            // Session manuell beendet
+            id(sauna_session_start_time) = 0;
+          }
+          else if (id(sauna_session_start_time) != 0) {
+            // Session läuft - Timeout prüfen
+            unsigned long elapsed = millis() - id(sauna_session_start_time);
+            if (elapsed >= 4UL * 60 * 60 * 1000) {
+              // 4h erreicht - Abschalten
+              auto call = id(sauna_thermostat).make_call();
+              call.set_mode("OFF");
+              call.perform();
+              id(hygrostat_switch).turn_off();
+              id(sauna_session_start_time) = 0;
+            }
           }
