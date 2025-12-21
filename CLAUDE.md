@@ -78,11 +78,13 @@ Entities sind im Webserver (Port 80) gruppiert:
 2. **Verdampfer** - Hygrostat, Ziel-Luftfeuchtigkeit, Luftfeuchte, Toleranzen
 3. **Infrarot** - Infrarotstrahler 1+2
 4. **Beleuchtung** - LED Salzkristall, LED Streifen
-5. **System** - ESP Restart, Debug-Sensoren, Version
+5. **Statistik** - Betriebsstunden, Session-Zähler
+6. **System** - ESP Restart, Debug-Sensoren, Version
 
 ## Wichtige Hinweise
 
 - **Nach ESP-Neustart:** Alle Regler starten im OFF-Modus (Sicherheit), LEDs mit Lava-Rot voreingestellt
+- **Statistik-Zähler:** Betriebsstunden und Sessions sind persistent (überleben Neustarts), nur laufende Sessions gehen bei Stromausfall verloren
 - **AM2320 Sensor:** Update-Interval 30s, kann bei Problemen erhöht werden
 - **GPIO-Switches:** `saunaofen` und `saunaverdampfer` sind `internal: true` (nicht direkt steuerbar)
 - **secrets.yaml:** Enthält WiFi-Credentials, API-Keys etc. - niemals committen!
