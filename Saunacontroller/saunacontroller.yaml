@@ -81,6 +81,9 @@ web_server:
     - id: group_beleuchtung
       name: "Beleuchtung"
       sorting_weight: 40
+    - id: group_statistik
+      name: "Statistik"
+      sorting_weight: 45
     - id: group_system
       name: "System"
       sorting_weight: 50
@@ -93,11 +96,31 @@ switch:
     pin: GPIO16
     restore_mode: ALWAYS_OFF
     internal: true
+    on_turn_on:
+      - lambda: |-
+          id(ofen_start_ms) = millis();
+    on_turn_off:
+      - lambda: |-
+          if (id(ofen_start_ms) > 0) {
+            unsigned long duration_ms = millis() - id(ofen_start_ms);
+            id(ofen_betriebsstunden) += duration_ms / 3600000.0f;
+            id(ofen_start_ms) = 0;
+          }
   - platform: gpio
     id: saunaverdampfer
     pin: GPIO17
     restore_mode: ALWAYS_OFF
     internal: true
+    on_turn_on:
+      - lambda: |-
+          id(verdampfer_start_ms) = millis();
+    on_turn_off:
+      - lambda: |-
+          if (id(verdampfer_start_ms) > 0) {
+            unsigned long duration_ms = millis() - id(verdampfer_start_ms);
+            id(verdampfer_betriebsstunden) += duration_ms / 3600000.0f;
+            id(verdampfer_start_ms) = 0;
+          }
   - platform: restart
     name: "ESP Restart"
     web_server:
@@ -117,11 +140,22 @@ switch:
       - globals.set:
           id: hygrostat_active
           value: 'true'
+      - lambda: |-
+          // Sauna-Session starten falls noch nicht aktiv
+          if (!id(sauna_session_active)) {
+            id(sauna_sessions) += 1;
+            id(sauna_session_active) = true;
+          }
     turn_off_action:
       - globals.set:
           id: hygrostat_active
           value: 'false'
       - switch.turn_off: saunaverdampfer
+      - lambda: |-
+          // Sauna-Session beenden falls Thermostat auch aus
+          if (id(sauna_session_active) && id(sauna_thermostat).mode == climate::CLIMATE_MODE_OFF) {
+            id(sauna_session_active) = false;
+          }
 
 one_wire:
   - pin: GPIO23
@@ -184,21 +218,152 @@ sensor:
       web_server:
         sorting_group_id: group_system
         sorting_weight: 60
+  # Session-Zähler
+  - platform: template
+    name: "Sauna Sessions"
+    id: sensor_sauna_sessions
+    icon: "mdi:counter"
+    accuracy_decimals: 0
+    lambda: |-
+      return id(sauna_sessions);
+    update_interval: 60s
+    web_server:
+      sorting_group_id: group_statistik
+      sorting_weight: 10
+  - platform: template
+    name: "Infrarot 1 Sessions"
+    id: sensor_infrarot1_sessions
+    icon: "mdi:counter"
+    accuracy_decimals: 0
+    lambda: |-
+      return id(infrarot1_sessions);
+    update_interval: 60s
+    web_server:
+      sorting_group_id: group_statistik
+      sorting_weight: 20
+  - platform: template
+    name: "Infrarot 2 Sessions"
+    id: sensor_infrarot2_sessions
+    icon: "mdi:counter"
+    accuracy_decimals: 0
+    lambda: |-
+      return id(infrarot2_sessions);
+    update_interval: 60s
+    web_server:
+      sorting_group_id: group_statistik
+      sorting_weight: 30
+  # Betriebsstunden-Zähler
+  - platform: template
+    name: "Ofen Betriebsstunden"
+    id: sensor_ofen_betriebsstunden
+    icon: "mdi:clock-outline"
+    unit_of_measurement: "h"
+    accuracy_decimals: 1
+    lambda: |-
+      return id(ofen_betriebsstunden);
+    update_interval: 60s
+    web_server:
+      sorting_group_id: group_statistik
+      sorting_weight: 40
+  - platform: template
+    name: "Verdampfer Betriebsstunden"
+    id: sensor_verdampfer_betriebsstunden
+    icon: "mdi:clock-outline"
+    unit_of_measurement: "h"
+    accuracy_decimals: 1
+    lambda: |-
+      return id(verdampfer_betriebsstunden);
+    update_interval: 60s
+    web_server:
+      sorting_group_id: group_statistik
+      sorting_weight: 50
+  - platform: template
+    name: "Infrarot 1 Betriebsstunden"
+    id: sensor_infrarot1_betriebsstunden
+    icon: "mdi:clock-outline"
+    unit_of_measurement: "h"
+    accuracy_decimals: 1
+    lambda: |-
+      return id(infrarot1_betriebsstunden);
+    update_interval: 60s
+    web_server:
+      sorting_group_id: group_statistik
+      sorting_weight: 60
+  - platform: template
+    name: "Infrarot 2 Betriebsstunden"
+    id: sensor_infrarot2_betriebsstunden
+    icon: "mdi:clock-outline"
+    unit_of_measurement: "h"
+    accuracy_decimals: 1
+    lambda: |-
+      return id(infrarot2_betriebsstunden);
+    update_interval: 60s
+    web_server:
+      sorting_group_id: group_statistik
+      sorting_weight: 70
+  - platform: template
+    name: "LED Salzkristall Betriebsstunden"
+    id: sensor_led_salzkristall_betriebsstunden
+    icon: "mdi:clock-outline"
+    unit_of_measurement: "h"
+    accuracy_decimals: 1
+    lambda: |-
+      return id(led_salzkristall_betriebsstunden);
+    update_interval: 60s
+    web_server:
+      sorting_group_id: group_statistik
+      sorting_weight: 80
+  - platform: template
+    name: "LED Streifen Betriebsstunden"
+    id: sensor_led_streifen_betriebsstunden
+    icon: "mdi:clock-outline"
+    unit_of_measurement: "h"
+    accuracy_decimals: 1
+    lambda: |-
+      return id(led_streifen_betriebsstunden);
+    update_interval: 60s
+    web_server:
+      sorting_group_id: group_statistik
+      sorting_weight: 90
 
 #LED Stripes - GPI02 & GPIO15
 light:
   - platform: monochromatic
+    id: infrarot1
     output: gpio_18
     name: "Infrarotstrahler 1"
     web_server:
       sorting_group_id: group_infrarot
       sorting_weight: 10
+    on_turn_on:
+      - lambda: |-
+          id(infrarot1_start_ms) = millis();
+          id(infrarot1_sessions) += 1;
+    on_turn_off:
+      - lambda: |-
+          if (id(infrarot1_start_ms) > 0) {
+            unsigned long duration_ms = millis() - id(infrarot1_start_ms);
+            id(infrarot1_betriebsstunden) += duration_ms / 3600000.0f;
+            id(infrarot1_start_ms) = 0;
+          }
   - platform: monochromatic
+    id: infrarot2
     output: gpio_19
     name: "Infrarotstrahler 2"
     web_server:
       sorting_group_id: group_infrarot
       sorting_weight: 20
+    on_turn_on:
+      - lambda: |-
+          id(infrarot2_start_ms) = millis();
+          id(infrarot2_sessions) += 1;
+    on_turn_off:
+      - lambda: |-
+          if (id(infrarot2_start_ms) > 0) {
+            unsigned long duration_ms = millis() - id(infrarot2_start_ms);
+            id(infrarot2_betriebsstunden) += duration_ms / 3600000.0f;
+            id(infrarot2_start_ms) = 0;
+          }
   - platform: esp32_rmt_led_strip
     id: led_salzkristall
     rgb_order: BGR
@@ -210,6 +375,16 @@ light:
     web_server:
       sorting_group_id: group_beleuchtung
       sorting_weight: 10
+    on_turn_on:
+      - lambda: |-
+          id(led_salzkristall_start_ms) = millis();
+    on_turn_off:
+      - lambda: |-
+          if (id(led_salzkristall_start_ms) > 0) {
+            unsigned long duration_ms = millis() - id(led_salzkristall_start_ms);
+            id(led_salzkristall_betriebsstunden) += duration_ms / 3600000.0f;
+            id(led_salzkristall_start_ms) = 0;
+          }
   - platform: esp32_rmt_led_strip
     id: led_streifen
     rgb_order: GRB
@@ -221,6 +396,16 @@ light:
     web_server:
       sorting_group_id: group_beleuchtung
       sorting_weight: 20
+    on_turn_on:
+      - lambda: |-
+          id(led_streifen_start_ms) = millis();
+    on_turn_off:
+      - lambda: |-
+          if (id(led_streifen_start_ms) > 0) {
+            unsigned long duration_ms = millis() - id(led_streifen_start_ms);
+            id(led_streifen_betriebsstunden) += duration_ms / 3600000.0f;
+            id(led_streifen_start_ms) = 0;
+          }
   #   effects:
   #     - pulse:
   #         name: "Fast Pulse"
@@ -321,6 +506,21 @@ climate:
       - switch.turn_on: saunaofen
     idle_action:
       - switch.turn_off: saunaofen
+    on_control:
+      - lambda: |-
+          // Sauna-Session Logik bei Thermostat-Steuerung
+          if (id(sauna_thermostat).mode != climate::CLIMATE_MODE_OFF) {
+            // Thermostat wurde aktiviert
+            if (!id(sauna_session_active)) {
+              id(sauna_sessions) += 1;
+              id(sauna_session_active) = true;
+            }
+          } else {
+            // Thermostat wurde ausgeschaltet
+            if (id(sauna_session_active) && !id(hygrostat_active)) {
+              id(sauna_session_active) = false;
+            }
+          }
     startup_delay: true
     web_server:
       sorting_group_id: group_sauna
@@ -377,6 +577,74 @@ globals:
     type: bool
     restore_value: false
     initial_value: 'false'
+  # Sauna-Session Tracking
+  - id: sauna_session_active
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+  # Session-Zähler (persistent)
+  - id: sauna_sessions
+    type: int
+    restore_value: true
+    initial_value: '0'
+  - id: infrarot1_sessions
+    type: int
+    restore_value: true
+    initial_value: '0'
+  - id: infrarot2_sessions
+    type: int
+    restore_value: true
+    initial_value: '0'
+  # Betriebsstunden (persistent, in Stunden)
+  - id: ofen_betriebsstunden
+    type: float
+    restore_value: true
+    initial_value: '0.0'
+  - id: verdampfer_betriebsstunden
+    type: float
+    restore_value: true
+    initial_value: '0.0'
+  - id: infrarot1_betriebsstunden
+    type: float
+    restore_value: true
+    initial_value: '0.0'
+  - id: infrarot2_betriebsstunden
+    type: float
+    restore_value: true
+    initial_value: '0.0'
+  - id: led_salzkristall_betriebsstunden
+    type: float
+    restore_value: true
+    initial_value: '0.0'
+  - id: led_streifen_betriebsstunden
+    type: float
+    restore_value: true
+    initial_value: '0.0'
+  # Start-Timestamps für Zeitmessung (RAM-only, in ms)
+  - id: ofen_start_ms
+    type: unsigned long
+    restore_value: false
+    initial_value: '0'
+  - id: verdampfer_start_ms
+    type: unsigned long
+    restore_value: false
+    initial_value: '0'
+  - id: infrarot1_start_ms
+    type: unsigned long
+    restore_value: false
+    initial_value: '0'
+  - id: infrarot2_start_ms
+    type: unsigned long
+    restore_value: false
+    initial_value: '0'
+  - id: led_salzkristall_start_ms
+    type: unsigned long
+    restore_value: false
+    initial_value: '0'
+  - id: led_streifen_start_ms
+    type: unsigned long
+    restore_value: false
+    initial_value: '0'
 
 interval:
   - interval: 10s
