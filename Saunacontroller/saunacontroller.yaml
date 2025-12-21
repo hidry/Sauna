@@ -157,6 +157,43 @@ switch:
             id(sauna_session_active) = false;
           }
 
+binary_sensor:
+  # SSR-Sicherheit: Übertemperatur-Warnung für Schaltschrank
+  # Schützt SSRs, Elektronik und Holzständerhaus vor Überhitzung
+  - platform: template
+    id: schaltschrank_uebertemperatur
+    name: "Schaltschrank Übertemperatur"
+    device_class: heat
+    icon: "mdi:thermometer-alert"
+    web_server:
+      sorting_group_id: group_system
+      sorting_weight: 15
+    lambda: |-
+      if (!id(temperatur_steuergeraet).has_state()) {
+        return false;
+      }
+      float temp = id(temperatur_steuergeraet).state;
+      // Hysterese: ON bei >50°C, OFF bei <45°C
+      if (temp > 50.0) {
+        return true;
+      } else if (temp < 45.0) {
+        return false;
+      }
+      // Zwischen 45-50°C: Zustand beibehalten
+      return id(schaltschrank_uebertemperatur).state;
+
+  # SSR-Sicherheit: Notabschaltung wurde ausgelöst
+  - platform: template
+    id: ssr_notabschaltung
+    name: "SSR Notabschaltung aktiv"
+    device_class: problem
+    icon: "mdi:alert-octagon"
+    web_server:
+      sorting_group_id: group_system
+      sorting_weight: 16
+    lambda: |-
+      return id(ssr_notabschaltung_aktiv);
+
 one_wire:
   - pin: GPIO23
     platform: gpio
@@ -172,6 +209,7 @@ i2c:
 
 sensor:
   - platform: dallas_temp
+    id: temperatur_steuergeraet
     address: 0x4a3c01b607ccd828
     name: "Temperatur Steuergerät"
     web_server:
@@ -598,6 +636,11 @@ globals:
     type: bool
     restore_value: false
     initial_value: 'false'
+  # SSR-Sicherheit: Notabschaltung aktiv
+  - id: ssr_notabschaltung_aktiv
+    type: bool
+    restore_value: false
+    initial_value: 'false'
   # Sauna-Session Tracking
   - id: sauna_session_active
     type: bool
@@ -720,4 +763,33 @@ interval:
               id(hygrostat_switch).turn_off();
               id(sauna_session_start_time) = 0;
             }
+          }
+  # SSR-Sicherheit: Notabschaltung bei Schaltschrank-Übertemperatur
+  # Schützt vor Überhitzung der SSRs und Brandgefahr im Holzständerhaus
+  - interval: 5s
+    then:
+      - lambda: |-
+          if (!id(temperatur_steuergeraet).has_state()) {
+            return;
+          }
+          float temp = id(temperatur_steuergeraet).state;
+
+          // Kritische Temperatur: 60°C - Ofen und Verdampfer abschalten
+          if (temp >= 60.0 && !id(ssr_notabschaltung_aktiv)) {
+            ESP_LOGW("ssr_safety", "KRITISCH: Schaltschrank %.1f°C - Notabschaltung!", temp);
+            id(ssr_notabschaltung_aktiv) = true;
+
+            // Thermostat abschalten
+            auto call = id(sauna_thermostat).make_call();
+            call.set_mode("OFF");
+            call.perform();
+
+            // Hygrostat abschalten
+            id(hygrostat_switch).turn_off();
+          }
+
+          // Entwarnung bei <50°C - Notabschaltung zurücksetzen
+          if (temp < 50.0 && id(ssr_notabschaltung_aktiv)) {
+            ESP_LOGI("ssr_safety", "Entwarnung: Schaltschrank %.1f°C - Notabschaltung aufgehoben", temp);
+            id(ssr_notabschaltung_aktiv) = false;
           }
