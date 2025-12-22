@@ -229,7 +229,7 @@ binary_sensor:
     lambda: |-
       return id(sauna_notabschaltung_aktiv);
 
-  # Sensor-Ausfall Erkennung: Temperatursensor liefert keine Werte
+  # Sensor-Ausfall Erkennung: AM2320 Temperatursensor liefert keine Werte
   # Schützt vor defekten oder abgesteckten Sensoren
   - platform: template
     id: sensor_ausfall
@@ -241,6 +241,19 @@ binary_sensor:
       sorting_weight: 17
     lambda: |-
       return id(sensor_ausfall_aktiv);
+
+  # Sensor-Ausfall Erkennung: DS18B20 Schaltschrank-Sensor liefert keine Werte
+  # Schützt vor defekten oder abgesteckten Sensoren - kritisch für SSR-Sicherheit
+  - platform: template
+    id: ds18b20_ausfall
+    name: "Schaltschrank-Sensor Ausfall"
+    device_class: problem
+    icon: "mdi:thermometer-off"
+    web_server:
+      sorting_group_id: group_system
+      sorting_weight: 18
+    lambda: |-
+      return id(ds18b20_ausfall_aktiv);
 
 one_wire:
   - pin: GPIO23
@@ -263,6 +276,10 @@ sensor:
     web_server:
       sorting_group_id: group_system
       sorting_weight: 20
+    on_value:
+      then:
+        - lambda: |-
+            id(letzter_ds18b20_update) = millis();
   - platform: am2320
     i2c_id: i2c_bus_a
     setup_priority: -1000
@@ -739,12 +756,21 @@ globals:
     type: bool
     restore_value: false
     initial_value: 'false'
-  # Sensor-Ausfall Erkennung
+  # Sensor-Ausfall Erkennung (AM2320 Sauna-Temperatur)
   - id: sensor_ausfall_aktiv
     type: bool
     restore_value: false
     initial_value: 'false'
   - id: letzter_temperatur_update
+    type: unsigned long
+    restore_value: false
+    initial_value: '0'
+  # Sensor-Ausfall Erkennung (DS18B20 Schaltschrank-Temperatur)
+  - id: ds18b20_ausfall_aktiv
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+  - id: letzter_ds18b20_update
     type: unsigned long
     restore_value: false
     initial_value: '0'
@@ -972,6 +998,51 @@ interval:
           if ((jetzt - letztes_update) < timeout && id(sensor_ausfall_aktiv)) {
             ESP_LOGI("sensor_safety", "Entwarnung: Temperatursensor wieder aktiv");
             id(sensor_ausfall_aktiv) = false;
+          }
+  # DS18B20 Sensor-Ausfall Erkennung: Kein Schaltschrank-Temperaturwert seit 180s
+  # Kritisch für SSR-Sicherheit - ohne Sensor kann Übertemperatur nicht erkannt werden
+  # Dallas-Sensor Standard-Update-Interval: 60s, Timeout: 180s (3x Interval)
+  - interval: 10s
+    then:
+      - lambda: |-
+          // Nur prüfen wenn Ofen oder Verdampfer aktiv
+          bool heizung_aktiv = id(saunaofen).state || id(saunaverdampfer).state;
+          if (!heizung_aktiv) {
+            // Entwarnung wenn Heizung aus
+            if (id(ds18b20_ausfall_aktiv)) {
+              ESP_LOGI("ds18b20_safety", "Entwarnung: Heizung aus - DS18B20-Ausfall zurückgesetzt");
+              id(ds18b20_ausfall_aktiv) = false;
+            }
+            return;
+          }
+
+          // Prüfen ob Sensor-Daten zu alt (>180s = 3x Update-Interval)
+          unsigned long jetzt = millis();
+          unsigned long letztes_update = id(letzter_ds18b20_update);
+
+          // Schutz vor millis()-Überlauf und Erststart
+          if (letztes_update == 0) {
+            return;
+          }
+
+          unsigned long timeout = 180000;  // 180 Sekunden (3x 60s Standard-Interval)
+          if ((jetzt - letztes_update) > timeout && !id(ds18b20_ausfall_aktiv)) {
+            ESP_LOGW("ds18b20_safety", "KRITISCH: Kein Schaltschrank-Temperaturwert seit >180s - Notabschaltung!");
+            id(ds18b20_ausfall_aktiv) = true;
+
+            // Thermostat abschalten
+            auto call = id(sauna_thermostat).make_call();
+            call.set_mode("OFF");
+            call.perform();
+
+            // Hygrostat abschalten
+            id(hygrostat_switch).turn_off();
+          }
+
+          // Entwarnung wenn Sensor wieder Daten liefert
+          if ((jetzt - letztes_update) < timeout && id(ds18b20_ausfall_aktiv)) {
+            ESP_LOGI("ds18b20_safety", "Entwarnung: DS18B20 Sensor wieder aktiv");
+            id(ds18b20_ausfall_aktiv) = false;
           }
   # Infrarot Auto-Off nach 2 Stunden
   # Verhindert vergessene Infrarotstrahler

@@ -83,9 +83,15 @@ Der ESP32 regelt autonom:
    - Schützt vor Reglerversagen und zu hohen Temperaturen
 
 6. **Sensor-Ausfall Erkennung** (Schutz vor defekten Sensoren)
-   - Überwacht: `temperatur_sauna` (AM2320, Update-Interval 30s)
-   - Timeout: 90s (3 fehlende Updates) → Binary Sensor `sensor_ausfall`
-   - Notabschaltung: Bei Timeout + aktiver Heizung → Ofen + Verdampfer werden abgeschaltet
+   - **AM2320 (Sauna-Temperatur):**
+     - Überwacht: `temperatur_sauna` (Update-Interval 30s)
+     - Timeout: 90s (3 fehlende Updates) → Binary Sensor `sensor_ausfall`
+     - Notabschaltung: Bei Timeout + aktiver Heizung → Ofen + Verdampfer werden abgeschaltet
+   - **DS18B20 (Schaltschrank-Temperatur):**
+     - Überwacht: `temperatur_steuergeraet` (Update-Interval 60s)
+     - Timeout: 180s (3 fehlende Updates) → Binary Sensor `ds18b20_ausfall`
+     - Notabschaltung: Bei Timeout + aktiver Heizung → Ofen + Verdampfer werden abgeschaltet
+     - Kritisch für SSR-Sicherheit: Ohne funktionierenden Sensor kann Übertemperatur nicht erkannt werden
    - Entwarnung: Automatisch wenn Sensor wieder Daten liefert
    - Schützt vor defekten oder abgesteckten Sensoren während des Betriebs
 
@@ -122,7 +128,10 @@ Entities sind im Webserver (Port 80) gruppiert:
 - **Infrarot Auto-Off nach 2h:** Infrarotstrahler werden nach 2 Stunden automatisch abgeschaltet (unabhängige Timer pro Strahler)
 - **SSR-Sicherheit:** Bei Schaltschrank-Temperatur ≥60°C werden Ofen und Verdampfer automatisch abgeschaltet (Schutz für SSRs und Holzständerhaus). Nach Abkühlung (<50°C) ist manueller Neustart erforderlich - prüfe bei Auslösung die Belüftung/Kühlung der SSRs
 - **Sauna-Maximaltemperatur:** Bei Sauna-Temperatur ≥95°C werden Ofen und Verdampfer automatisch abgeschaltet (Schutz vor Reglerversagen). Nach Abkühlung (<85°C) ist manueller Neustart erforderlich
-- **Sensor-Ausfall:** Wenn der Temperatursensor >90s keine Werte liefert und die Heizung aktiv ist, werden Ofen und Verdampfer automatisch abgeschaltet. Entwarnung erfolgt automatisch wenn der Sensor wieder Daten liefert
+- **Sensor-Ausfall:** Wenn ein Temperatursensor keine Werte liefert und die Heizung aktiv ist, werden Ofen und Verdampfer automatisch abgeschaltet:
+  - AM2320 (Sauna): Timeout nach >90s → Binary Sensor `sensor_ausfall`
+  - DS18B20 (Schaltschrank): Timeout nach >180s → Binary Sensor `ds18b20_ausfall` (kritisch für SSR-Sicherheit)
+  - Entwarnung erfolgt automatisch wenn Sensor wieder Daten liefert
 - **AM2320 Sensor:** Update-Interval 30s, kann bei Problemen erhöht werden
 - **GPIO-Switches:** `saunaofen` und `saunaverdampfer` sind `internal: true` (nicht direkt steuerbar)
 - **secrets.yaml:** Enthält WiFi-Credentials, API-Keys etc. - niemals committen!
