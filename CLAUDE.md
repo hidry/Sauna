@@ -75,6 +75,13 @@ Der ESP32 regelt autonom:
    - Entwarnung: <50°C → Notabschaltung aufgehoben, manueller Neustart erforderlich
    - Schützt SSRs, Elektronik und Holzständerhaus vor Überhitzung/Brand
 
+5. **Sauna-Maximaltemperatur** (Übertemperaturschutz Sauna-Raum)
+   - Sensor: `temperatur_sauna` (AM2320)
+   - Warnung: >90°C → Binary Sensor `sauna_uebertemperatur` (für HA-Automations)
+   - Notabschaltung: ≥95°C → Ofen + Verdampfer werden sofort abgeschaltet
+   - Entwarnung: <85°C → Notabschaltung aufgehoben, manueller Neustart erforderlich
+   - Schützt vor Reglerversagen und zu hohen Temperaturen
+
 ### Home Assistant Integration
 
 Die HA API bleibt aktiv. HA nutzt direkt die ESP-Entities:
@@ -87,7 +94,7 @@ Die alte `generic_thermostat`/`generic_hygrostat` Konfiguration ist nicht mehr n
 ## Webserver-Gruppen
 
 Entities sind im Webserver (Port 80) gruppiert:
-1. **Sauna** - Thermostat, Temperatur, Restzeit
+1. **Sauna** - Thermostat, Temperatur, Restzeit, Übertemperatur-Schutz
 2. **Verdampfer** - Hygrostat, Ziel-Luftfeuchtigkeit, Luftfeuchte, Toleranzen
 3. **Infrarot** - Infrarotstrahler 1+2
 4. **Beleuchtung** - LED Salzkristall, LED Streifen
@@ -100,6 +107,7 @@ Entities sind im Webserver (Port 80) gruppiert:
 - **Statistik-Zähler:** Betriebsstunden und Sessions sind persistent (überleben Neustarts), nur laufende Sessions gehen bei Stromausfall verloren
 - **Auto-Off nach 4h:** Thermostat und Hygrostat werden automatisch abgeschaltet (Sicherheitsfeature)
 - **SSR-Sicherheit:** Bei Schaltschrank-Temperatur ≥60°C werden Ofen und Verdampfer automatisch abgeschaltet (Schutz für SSRs und Holzständerhaus). Nach Abkühlung (<50°C) ist manueller Neustart erforderlich - prüfe bei Auslösung die Belüftung/Kühlung der SSRs
+- **Sauna-Maximaltemperatur:** Bei Sauna-Temperatur ≥95°C werden Ofen und Verdampfer automatisch abgeschaltet (Schutz vor Reglerversagen). Nach Abkühlung (<85°C) ist manueller Neustart erforderlich
 - **AM2320 Sensor:** Update-Interval 30s, kann bei Problemen erhöht werden
 - **GPIO-Switches:** `saunaofen` und `saunaverdampfer` sind `internal: true` (nicht direkt steuerbar)
 - **secrets.yaml:** Enthält WiFi-Credentials, API-Keys etc. - niemals committen!

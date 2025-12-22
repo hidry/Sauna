@@ -194,6 +194,42 @@ binary_sensor:
     lambda: |-
       return id(ssr_notabschaltung_aktiv);
 
+  # Sauna-Sicherheit: Übertemperatur-Warnung für Sauna-Raum
+  # Schützt vor Reglerversagen und zu hohen Temperaturen
+  - platform: template
+    id: sauna_uebertemperatur
+    name: "Sauna Übertemperatur"
+    device_class: heat
+    icon: "mdi:thermometer-alert"
+    web_server:
+      sorting_group_id: group_sauna
+      sorting_weight: 25
+    lambda: |-
+      if (!id(temperatur_sauna).has_state()) {
+        return false;
+      }
+      float temp = id(temperatur_sauna).state;
+      // Hysterese: ON bei >90°C, OFF bei <85°C
+      if (temp > 90.0) {
+        return true;
+      } else if (temp < 85.0) {
+        return false;
+      }
+      // Zwischen 85-90°C: Zustand beibehalten
+      return id(sauna_uebertemperatur).state;
+
+  # Sauna-Sicherheit: Notabschaltung wurde ausgelöst
+  - platform: template
+    id: sauna_notabschaltung
+    name: "Sauna Notabschaltung aktiv"
+    device_class: problem
+    icon: "mdi:alert-octagon"
+    web_server:
+      sorting_group_id: group_sauna
+      sorting_weight: 26
+    lambda: |-
+      return id(sauna_notabschaltung_aktiv);
+
 one_wire:
   - pin: GPIO23
     platform: gpio
@@ -641,6 +677,11 @@ globals:
     type: bool
     restore_value: false
     initial_value: 'false'
+  # Sauna-Sicherheit: Notabschaltung bei Übertemperatur im Sauna-Raum
+  - id: sauna_notabschaltung_aktiv
+    type: bool
+    restore_value: false
+    initial_value: 'false'
   # Sauna-Session Tracking
   - id: sauna_session_active
     type: bool
@@ -792,4 +833,33 @@ interval:
           if (temp < 50.0 && id(ssr_notabschaltung_aktiv)) {
             ESP_LOGI("ssr_safety", "Entwarnung: Schaltschrank %.1f°C - Notabschaltung aufgehoben", temp);
             id(ssr_notabschaltung_aktiv) = false;
+          }
+  # Sauna-Sicherheit: Notabschaltung bei Sauna-Übertemperatur
+  # Schützt vor Reglerversagen und zu hohen Temperaturen
+  - interval: 5s
+    then:
+      - lambda: |-
+          if (!id(temperatur_sauna).has_state()) {
+            return;
+          }
+          float temp = id(temperatur_sauna).state;
+
+          // Kritische Temperatur: 95°C - Ofen abschalten
+          if (temp >= 95.0 && !id(sauna_notabschaltung_aktiv)) {
+            ESP_LOGW("sauna_safety", "KRITISCH: Sauna %.1f°C - Notabschaltung!", temp);
+            id(sauna_notabschaltung_aktiv) = true;
+
+            // Thermostat abschalten
+            auto call = id(sauna_thermostat).make_call();
+            call.set_mode("OFF");
+            call.perform();
+
+            // Hygrostat abschalten (Verdampfer erzeugt auch Wärme)
+            id(hygrostat_switch).turn_off();
+          }
+
+          // Entwarnung bei <85°C - Notabschaltung zurücksetzen
+          if (temp < 85.0 && id(sauna_notabschaltung_aktiv)) {
+            ESP_LOGI("sauna_safety", "Entwarnung: Sauna %.1f°C - Notabschaltung aufgehoben", temp);
+            id(sauna_notabschaltung_aktiv) = false;
           }
