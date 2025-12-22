@@ -1,5 +1,6 @@
-# Gitignore settings for ESPHome
-# This is an example and may include too much for your use-case.
-# You can modify this file to suit your needs.
+# ESPHome Build-Artefakte
 /.esphome/
-/secrets.yaml
+
+# Hinweis: secrets.yaml ist ABSICHTLICH im Repo!
+# Sie enthält nur Dummy-Werte für CI/Devcontainer.
+# Siehe secrets.yaml.example für das Template.

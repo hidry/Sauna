@@ -40,9 +40,8 @@ esp32:
 debug:
   update_interval: 5s
 
-# Logger must be at least debug (default)
 logger:
-  level: debug
+  level: info
 
 # Enable Home Assistant API
 api:
