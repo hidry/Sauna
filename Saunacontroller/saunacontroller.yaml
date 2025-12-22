@@ -194,6 +194,55 @@ binary_sensor:
     lambda: |-
       return id(ssr_notabschaltung_aktiv);
 
+  # Sauna-Sicherheit: Übertemperatur-Warnung für Sauna-Raum
+  # Schützt vor Reglerversagen und zu hohen Temperaturen
+  - platform: template
+    id: sauna_uebertemperatur
+    name: "Sauna Übertemperatur"
+    device_class: heat
+    icon: "mdi:thermometer-alert"
+    web_server:
+      sorting_group_id: group_sauna
+      sorting_weight: 25
+    lambda: |-
+      if (!id(temperatur_sauna).has_state()) {
+        return false;
+      }
+      float temp = id(temperatur_sauna).state;
+      // Hysterese: ON bei >90°C, OFF bei <85°C
+      if (temp > 90.0) {
+        return true;
+      } else if (temp < 85.0) {
+        return false;
+      }
+      // Zwischen 85-90°C: Zustand beibehalten
+      return id(sauna_uebertemperatur).state;
+
+  # Sauna-Sicherheit: Notabschaltung wurde ausgelöst
+  - platform: template
+    id: sauna_notabschaltung
+    name: "Sauna Notabschaltung aktiv"
+    device_class: problem
+    icon: "mdi:alert-octagon"
+    web_server:
+      sorting_group_id: group_sauna
+      sorting_weight: 26
+    lambda: |-
+      return id(sauna_notabschaltung_aktiv);
+
+  # Sensor-Ausfall Erkennung: Temperatursensor liefert keine Werte
+  # Schützt vor defekten oder abgesteckten Sensoren
+  - platform: template
+    id: sensor_ausfall
+    name: "Temperatursensor Ausfall"
+    device_class: problem
+    icon: "mdi:thermometer-off"
+    web_server:
+      sorting_group_id: group_system
+      sorting_weight: 17
+    lambda: |-
+      return id(sensor_ausfall_aktiv);
+
 one_wire:
   - pin: GPIO23
     platform: gpio
@@ -226,6 +275,10 @@ sensor:
       web_server:
         sorting_group_id: group_sauna
         sorting_weight: 20
+      on_value:
+        then:
+          - lambda: |-
+              id(letzter_temperatur_update) = millis();
     humidity:
       id: luftfeuchte_sauna
       name: "Luftfeuchte Sauna"
@@ -273,6 +326,47 @@ sensor:
       }
       unsigned long elapsed = millis() - id(sauna_session_start_time);
       unsigned long max_time = 4UL * 60 * 60 * 1000;  // 4h in ms
+      if (elapsed >= max_time) {
+        return 0;
+      }
+      return (max_time - elapsed) / 60000.0;  // Minuten
+  # Infrarot Auto-Off Restzeit
+  - platform: template
+    id: infrarot1_restzeit
+    name: "Infrarot 1 Restzeit"
+    unit_of_measurement: "min"
+    icon: "mdi:timer-outline"
+    accuracy_decimals: 0
+    update_interval: 10s
+    web_server:
+      sorting_group_id: group_infrarot
+      sorting_weight: 15
+    lambda: |-
+      if (id(infrarot1_start_ms) == 0) {
+        return 0;
+      }
+      unsigned long elapsed = millis() - id(infrarot1_start_ms);
+      unsigned long max_time = 2UL * 60 * 60 * 1000;  // 2h in ms
+      if (elapsed >= max_time) {
+        return 0;
+      }
+      return (max_time - elapsed) / 60000.0;  // Minuten
+  - platform: template
+    id: infrarot2_restzeit
+    name: "Infrarot 2 Restzeit"
+    unit_of_measurement: "min"
+    icon: "mdi:timer-outline"
+    accuracy_decimals: 0
+    update_interval: 10s
+    web_server:
+      sorting_group_id: group_infrarot
+      sorting_weight: 25
+    lambda: |-
+      if (id(infrarot2_start_ms) == 0) {
+        return 0;
+      }
+      unsigned long elapsed = millis() - id(infrarot2_start_ms);
+      unsigned long max_time = 2UL * 60 * 60 * 1000;  // 2h in ms
       if (elapsed >= max_time) {
         return 0;
       }
@@ -641,6 +735,20 @@ globals:
     type: bool
     restore_value: false
     initial_value: 'false'
+  # Sauna-Sicherheit: Notabschaltung bei Übertemperatur im Sauna-Raum
+  - id: sauna_notabschaltung_aktiv
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+  # Sensor-Ausfall Erkennung
+  - id: sensor_ausfall_aktiv
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+  - id: letzter_temperatur_update
+    type: unsigned long
+    restore_value: false
+    initial_value: '0'
   # Sauna-Session Tracking
   - id: sauna_session_active
     type: bool
@@ -792,4 +900,102 @@ interval:
           if (temp < 50.0 && id(ssr_notabschaltung_aktiv)) {
             ESP_LOGI("ssr_safety", "Entwarnung: Schaltschrank %.1f°C - Notabschaltung aufgehoben", temp);
             id(ssr_notabschaltung_aktiv) = false;
+          }
+  # Sauna-Sicherheit: Notabschaltung bei Sauna-Übertemperatur
+  # Schützt vor Reglerversagen und zu hohen Temperaturen
+  - interval: 5s
+    then:
+      - lambda: |-
+          if (!id(temperatur_sauna).has_state()) {
+            return;
+          }
+          float temp = id(temperatur_sauna).state;
+
+          // Kritische Temperatur: 95°C - Ofen abschalten
+          if (temp >= 95.0 && !id(sauna_notabschaltung_aktiv)) {
+            ESP_LOGW("sauna_safety", "KRITISCH: Sauna %.1f°C - Notabschaltung!", temp);
+            id(sauna_notabschaltung_aktiv) = true;
+
+            // Thermostat abschalten
+            auto call = id(sauna_thermostat).make_call();
+            call.set_mode("OFF");
+            call.perform();
+
+            // Hygrostat abschalten (Verdampfer erzeugt auch Wärme)
+            id(hygrostat_switch).turn_off();
+          }
+
+          // Entwarnung bei <85°C - Notabschaltung zurücksetzen
+          if (temp < 85.0 && id(sauna_notabschaltung_aktiv)) {
+            ESP_LOGI("sauna_safety", "Entwarnung: Sauna %.1f°C - Notabschaltung aufgehoben", temp);
+            id(sauna_notabschaltung_aktiv) = false;
+          }
+  # Sensor-Ausfall Erkennung: Kein Temperaturwert seit 90s
+  # Schützt vor defekten oder abgesteckten Sensoren (AM2320 Update-Interval: 30s)
+  - interval: 10s
+    then:
+      - lambda: |-
+          // Nur prüfen wenn Ofen oder Verdampfer aktiv
+          bool heizung_aktiv = id(saunaofen).state || id(saunaverdampfer).state;
+          if (!heizung_aktiv) {
+            // Entwarnung wenn Heizung aus
+            if (id(sensor_ausfall_aktiv)) {
+              ESP_LOGI("sensor_safety", "Entwarnung: Heizung aus - Sensor-Ausfall zurückgesetzt");
+              id(sensor_ausfall_aktiv) = false;
+            }
+            return;
+          }
+
+          // Prüfen ob Sensor-Daten zu alt (>90s = 3x Update-Interval)
+          unsigned long jetzt = millis();
+          unsigned long letztes_update = id(letzter_temperatur_update);
+
+          // Schutz vor millis()-Überlauf und Erststart
+          if (letztes_update == 0) {
+            return;
+          }
+
+          unsigned long timeout = 90000;  // 90 Sekunden
+          if ((jetzt - letztes_update) > timeout && !id(sensor_ausfall_aktiv)) {
+            ESP_LOGW("sensor_safety", "KRITISCH: Kein Temperaturwert seit >90s - Notabschaltung!");
+            id(sensor_ausfall_aktiv) = true;
+
+            // Thermostat abschalten
+            auto call = id(sauna_thermostat).make_call();
+            call.set_mode("OFF");
+            call.perform();
+
+            // Hygrostat abschalten
+            id(hygrostat_switch).turn_off();
+          }
+
+          // Entwarnung wenn Sensor wieder Daten liefert
+          if ((jetzt - letztes_update) < timeout && id(sensor_ausfall_aktiv)) {
+            ESP_LOGI("sensor_safety", "Entwarnung: Temperatursensor wieder aktiv");
+            id(sensor_ausfall_aktiv) = false;
+          }
+  # Infrarot Auto-Off nach 2 Stunden
+  # Verhindert vergessene Infrarotstrahler
+  - interval: 10s
+    then:
+      - lambda: |-
+          unsigned long jetzt = millis();
+          unsigned long max_time = 2UL * 60 * 60 * 1000;  // 2h in ms
+
+          // Infrarot 1 prüfen
+          if (id(infrarot1_start_ms) != 0) {
+            unsigned long elapsed = jetzt - id(infrarot1_start_ms);
+            if (elapsed >= max_time) {
+              ESP_LOGI("infrarot_safety", "Auto-Off: Infrarot 1 nach 2h abgeschaltet");
+              id(infrarot1).turn_off();
+            }
+          }
+
+          // Infrarot 2 prüfen
+          if (id(infrarot2_start_ms) != 0) {
+            unsigned long elapsed = jetzt - id(infrarot2_start_ms);
+            if (elapsed >= max_time) {
+              ESP_LOGI("infrarot_safety", "Auto-Off: Infrarot 2 nach 2h abgeschaltet");
+              id(infrarot2).turn_off();
+            }
           }
