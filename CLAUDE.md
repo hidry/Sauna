@@ -89,6 +89,12 @@ Der ESP32 regelt autonom:
    - Entwarnung: Automatisch wenn Sensor wieder Daten liefert
    - Schützt vor defekten oder abgesteckten Sensoren während des Betriebs
 
+7. **Infrarot Auto-Off** (Sicherheitsabschaltung)
+   - Nach 2 Stunden: Infrarotstrahler werden automatisch abgeschaltet
+   - Sensoren: `infrarot1_restzeit`, `infrarot2_restzeit` zeigen Restzeit in Minuten
+   - Unabhängig für jeden Strahler (eigene Timer)
+   - Verhindert vergessene Infrarotstrahler
+
 ### Home Assistant Integration
 
 Die HA API bleibt aktiv. HA nutzt direkt die ESP-Entities:
@@ -103,7 +109,7 @@ Die alte `generic_thermostat`/`generic_hygrostat` Konfiguration ist nicht mehr n
 Entities sind im Webserver (Port 80) gruppiert:
 1. **Sauna** - Thermostat, Temperatur, Restzeit, Übertemperatur-Schutz
 2. **Verdampfer** - Hygrostat, Ziel-Luftfeuchtigkeit, Luftfeuchte, Toleranzen
-3. **Infrarot** - Infrarotstrahler 1+2
+3. **Infrarot** - Infrarotstrahler 1+2, Restzeiten
 4. **Beleuchtung** - LED Salzkristall, LED Streifen
 5. **Statistik** - Betriebsstunden, Session-Zähler
 6. **System** - SSR-Sicherheit, Sensor-Ausfall, ESP Restart, Debug-Sensoren, Version
@@ -113,6 +119,7 @@ Entities sind im Webserver (Port 80) gruppiert:
 - **Nach ESP-Neustart:** Alle Regler starten im OFF-Modus (Sicherheit), LEDs mit Lava-Rot voreingestellt
 - **Statistik-Zähler:** Betriebsstunden und Sessions sind persistent (überleben Neustarts), nur laufende Sessions gehen bei Stromausfall verloren
 - **Auto-Off nach 4h:** Thermostat und Hygrostat werden automatisch abgeschaltet (Sicherheitsfeature)
+- **Infrarot Auto-Off nach 2h:** Infrarotstrahler werden nach 2 Stunden automatisch abgeschaltet (unabhängige Timer pro Strahler)
 - **SSR-Sicherheit:** Bei Schaltschrank-Temperatur ≥60°C werden Ofen und Verdampfer automatisch abgeschaltet (Schutz für SSRs und Holzständerhaus). Nach Abkühlung (<50°C) ist manueller Neustart erforderlich - prüfe bei Auslösung die Belüftung/Kühlung der SSRs
 - **Sauna-Maximaltemperatur:** Bei Sauna-Temperatur ≥95°C werden Ofen und Verdampfer automatisch abgeschaltet (Schutz vor Reglerversagen). Nach Abkühlung (<85°C) ist manueller Neustart erforderlich
 - **Sensor-Ausfall:** Wenn der Temperatursensor >90s keine Werte liefert und die Heizung aktiv ist, werden Ofen und Verdampfer automatisch abgeschaltet. Entwarnung erfolgt automatisch wenn der Sensor wieder Daten liefert

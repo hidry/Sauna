@@ -330,6 +330,47 @@ sensor:
         return 0;
       }
       return (max_time - elapsed) / 60000.0;  // Minuten
+  # Infrarot Auto-Off Restzeit
+  - platform: template
+    id: infrarot1_restzeit
+    name: "Infrarot 1 Restzeit"
+    unit_of_measurement: "min"
+    icon: "mdi:timer-outline"
+    accuracy_decimals: 0
+    update_interval: 10s
+    web_server:
+      sorting_group_id: group_infrarot
+      sorting_weight: 15
+    lambda: |-
+      if (id(infrarot1_start_ms) == 0) {
+        return 0;
+      }
+      unsigned long elapsed = millis() - id(infrarot1_start_ms);
+      unsigned long max_time = 2UL * 60 * 60 * 1000;  // 2h in ms
+      if (elapsed >= max_time) {
+        return 0;
+      }
+      return (max_time - elapsed) / 60000.0;  // Minuten
+  - platform: template
+    id: infrarot2_restzeit
+    name: "Infrarot 2 Restzeit"
+    unit_of_measurement: "min"
+    icon: "mdi:timer-outline"
+    accuracy_decimals: 0
+    update_interval: 10s
+    web_server:
+      sorting_group_id: group_infrarot
+      sorting_weight: 25
+    lambda: |-
+      if (id(infrarot2_start_ms) == 0) {
+        return 0;
+      }
+      unsigned long elapsed = millis() - id(infrarot2_start_ms);
+      unsigned long max_time = 2UL * 60 * 60 * 1000;  // 2h in ms
+      if (elapsed >= max_time) {
+        return 0;
+      }
+      return (max_time - elapsed) / 60000.0;  // Minuten
   # Session-Zähler
   - platform: template
     name: "Sauna Sessions"
@@ -932,4 +973,29 @@ interval:
           if ((jetzt - letztes_update) < timeout && id(sensor_ausfall_aktiv)) {
             ESP_LOGI("sensor_safety", "Entwarnung: Temperatursensor wieder aktiv");
             id(sensor_ausfall_aktiv) = false;
+          }
+  # Infrarot Auto-Off nach 2 Stunden
+  # Verhindert vergessene Infrarotstrahler
+  - interval: 10s
+    then:
+      - lambda: |-
+          unsigned long jetzt = millis();
+          unsigned long max_time = 2UL * 60 * 60 * 1000;  // 2h in ms
+
+          // Infrarot 1 prüfen
+          if (id(infrarot1_start_ms) != 0) {
+            unsigned long elapsed = jetzt - id(infrarot1_start_ms);
+            if (elapsed >= max_time) {
+              ESP_LOGI("infrarot_safety", "Auto-Off: Infrarot 1 nach 2h abgeschaltet");
+              id(infrarot1).turn_off();
+            }
+          }
+
+          // Infrarot 2 prüfen
+          if (id(infrarot2_start_ms) != 0) {
+            unsigned long elapsed = jetzt - id(infrarot2_start_ms);
+            if (elapsed >= max_time) {
+              ESP_LOGI("infrarot_safety", "Auto-Off: Infrarot 2 nach 2h abgeschaltet");
+              id(infrarot2).turn_off();
+            }
           }
