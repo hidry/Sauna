@@ -82,6 +82,13 @@ Der ESP32 regelt autonom:
    - Entwarnung: <85°C → Notabschaltung aufgehoben, manueller Neustart erforderlich
    - Schützt vor Reglerversagen und zu hohen Temperaturen
 
+6. **Sensor-Ausfall Erkennung** (Schutz vor defekten Sensoren)
+   - Überwacht: `temperatur_sauna` (AM2320, Update-Interval 30s)
+   - Timeout: 90s (3 fehlende Updates) → Binary Sensor `sensor_ausfall`
+   - Notabschaltung: Bei Timeout + aktiver Heizung → Ofen + Verdampfer werden abgeschaltet
+   - Entwarnung: Automatisch wenn Sensor wieder Daten liefert
+   - Schützt vor defekten oder abgesteckten Sensoren während des Betriebs
+
 ### Home Assistant Integration
 
 Die HA API bleibt aktiv. HA nutzt direkt die ESP-Entities:
@@ -99,7 +106,7 @@ Entities sind im Webserver (Port 80) gruppiert:
 3. **Infrarot** - Infrarotstrahler 1+2
 4. **Beleuchtung** - LED Salzkristall, LED Streifen
 5. **Statistik** - Betriebsstunden, Session-Zähler
-6. **System** - SSR-Sicherheit (Übertemperatur, Notabschaltung), ESP Restart, Debug-Sensoren, Version
+6. **System** - SSR-Sicherheit, Sensor-Ausfall, ESP Restart, Debug-Sensoren, Version
 
 ## Wichtige Hinweise
 
@@ -108,6 +115,7 @@ Entities sind im Webserver (Port 80) gruppiert:
 - **Auto-Off nach 4h:** Thermostat und Hygrostat werden automatisch abgeschaltet (Sicherheitsfeature)
 - **SSR-Sicherheit:** Bei Schaltschrank-Temperatur ≥60°C werden Ofen und Verdampfer automatisch abgeschaltet (Schutz für SSRs und Holzständerhaus). Nach Abkühlung (<50°C) ist manueller Neustart erforderlich - prüfe bei Auslösung die Belüftung/Kühlung der SSRs
 - **Sauna-Maximaltemperatur:** Bei Sauna-Temperatur ≥95°C werden Ofen und Verdampfer automatisch abgeschaltet (Schutz vor Reglerversagen). Nach Abkühlung (<85°C) ist manueller Neustart erforderlich
+- **Sensor-Ausfall:** Wenn der Temperatursensor >90s keine Werte liefert und die Heizung aktiv ist, werden Ofen und Verdampfer automatisch abgeschaltet. Entwarnung erfolgt automatisch wenn der Sensor wieder Daten liefert
 - **AM2320 Sensor:** Update-Interval 30s, kann bei Problemen erhöht werden
 - **GPIO-Switches:** `saunaofen` und `saunaverdampfer` sind `internal: true` (nicht direkt steuerbar)
 - **secrets.yaml:** Enthält WiFi-Credentials, API-Keys etc. - niemals committen!
