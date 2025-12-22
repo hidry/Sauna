@@ -36,9 +36,9 @@ esp32:
   framework:
     type: arduino
 
-# Example configuration entry
+# Debug: Intervall auf 60s um Main-Loop-Blockierung zu reduzieren
 debug:
-  update_interval: 5s
+  update_interval: 60s
 
 logger:
   level: info
