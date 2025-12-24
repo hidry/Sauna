@@ -1,0 +1,589 @@
+/*
+ * Sauna Controller - Custom Theme
+ * Modern, touch-friendly UI with warm color palette
+ * Optimized for mobile, tablet, and desktop
+ */
+
+/* ========== CSS Variables - Sauna Color Palette ========== */
+:root {
+  /* Primary - Warm Wood Tones */
+  --sauna-wood-light: #D4A574;
+  --sauna-wood-medium: #A67C52;
+  --sauna-wood-dark: #5C4033;
+
+  /* Accent - Fire Tones */
+  --sauna-fire-hot: #FF6B35;
+  --sauna-fire-warm: #FFB84D;
+  --sauna-fire-glow: #FFC857;
+
+  /* Functional Colors */
+  --sauna-water: #4A90E2;
+  --sauna-steam: #E8F4F8;
+  --sauna-alert: #E74C3C;
+  --sauna-safe: #27AE60;
+  --sauna-warning: #F39C12;
+
+  /* Backgrounds - Dark Theme */
+  --sauna-bg-primary: #1A1A1A;
+  --sauna-bg-secondary: #2C2C2C;
+  --sauna-bg-tertiary: #3D3D3D;
+  --sauna-bg-card: #242424;
+
+  /* Text Colors */
+  --sauna-text-primary: #FFFFFF;
+  --sauna-text-secondary: #B8B8B8;
+  --sauna-text-tertiary: #8A8A8A;
+
+  /* Borders & Shadows */
+  --sauna-border: rgba(255, 255, 255, 0.1);
+  --sauna-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --sauna-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+  --sauna-glow: 0 0 20px rgba(255, 107, 53, 0.3);
+
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+
+  /* Border Radius */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  /* Typography */
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "SF Mono", "Monaco", "Inconsolata", "Fira Code", "Droid Sans Mono", "Source Code Pro", monospace;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-medium: 250ms ease;
+  --transition-slow: 400ms ease;
+}
+
+/* ========== Global Styles ========== */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: linear-gradient(135deg, var(--sauna-bg-primary) 0%, #0F0F0F 100%);
+  color: var(--sauna-text-primary);
+  font-family: var(--font-family);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ========== Header Styling ========== */
+header {
+  background: var(--sauna-bg-secondary);
+  border-bottom: 2px solid var(--sauna-fire-hot);
+  padding: var(--space-lg);
+  box-shadow: var(--sauna-shadow);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--sauna-fire-hot), var(--sauna-fire-warm));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+/* ========== Main Content Container ========== */
+.content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--space-lg);
+}
+
+/* ========== Group Cards ========== */
+.card {
+  background: var(--sauna-bg-card);
+  border: 1px solid var(--sauna-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+  box-shadow: var(--sauna-shadow);
+  transition: transform var(--transition-medium), box-shadow var(--transition-medium);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--sauna-shadow-lg);
+}
+
+.card h2 {
+  margin: 0 0 var(--space-md) 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--sauna-wood-light);
+  border-bottom: 2px solid var(--sauna-border);
+  padding-bottom: var(--space-sm);
+}
+
+/* Group-specific colors */
+.card[data-group="sauna"] h2 {
+  color: var(--sauna-fire-hot);
+  border-bottom-color: var(--sauna-fire-hot);
+}
+
+.card[data-group="verdampfer"] h2 {
+  color: var(--sauna-water);
+  border-bottom-color: var(--sauna-water);
+}
+
+.card[data-group="infrarot"] h2 {
+  color: var(--sauna-fire-warm);
+  border-bottom-color: var(--sauna-fire-warm);
+}
+
+.card[data-group="beleuchtung"] h2 {
+  color: var(--sauna-fire-glow);
+  border-bottom-color: var(--sauna-fire-glow);
+}
+
+.card[data-group="statistik"] h2 {
+  color: var(--sauna-wood-medium);
+  border-bottom-color: var(--sauna-wood-medium);
+}
+
+.card[data-group="system"] h2 {
+  color: var(--sauna-text-secondary);
+  border-bottom-color: var(--sauna-border);
+}
+
+/* ========== Entity Rows ========== */
+.entity-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md);
+  margin: var(--space-sm) 0;
+  background: var(--sauna-bg-tertiary);
+  border-radius: var(--radius-md);
+  transition: background var(--transition-fast);
+  min-height: 60px;
+}
+
+.entity-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.entity-row .name {
+  font-weight: 500;
+  font-size: 1rem;
+  color: var(--sauna-text-primary);
+  flex: 1;
+}
+
+.entity-row .value {
+  font-family: var(--font-mono);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--sauna-text-primary);
+  margin: 0 var(--space-md);
+}
+
+/* Temperature values with fire glow */
+.entity-row .value[data-type="temperature"] {
+  color: var(--sauna-fire-warm);
+  text-shadow: 0 0 10px rgba(255, 184, 77, 0.3);
+}
+
+/* Humidity values with water color */
+.entity-row .value[data-type="humidity"] {
+  color: var(--sauna-water);
+}
+
+/* ========== Buttons & Controls ========== */
+button, .button {
+  background: var(--sauna-bg-secondary);
+  border: 1px solid var(--sauna-border);
+  border-radius: var(--radius-md);
+  color: var(--sauna-text-primary);
+  padding: var(--space-md) var(--space-lg);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-width: 44px;
+  min-height: 44px;
+  font-family: var(--font-family);
+}
+
+button:hover, .button:hover {
+  background: var(--sauna-bg-tertiary);
+  border-color: var(--sauna-wood-light);
+  transform: translateY(-1px);
+}
+
+button:active, .button:active {
+  transform: translateY(0);
+}
+
+/* ON state buttons - Fire glow */
+button.state-on, .button.state-on {
+  background: linear-gradient(135deg, var(--sauna-fire-hot), var(--sauna-fire-warm));
+  border-color: var(--sauna-fire-hot);
+  box-shadow: var(--sauna-glow);
+}
+
+button.state-on:hover, .button.state-on:hover {
+  box-shadow: 0 0 30px rgba(255, 107, 53, 0.5);
+}
+
+/* OFF state buttons */
+button.state-off, .button.state-off {
+  background: var(--sauna-bg-tertiary);
+  border-color: var(--sauna-border);
+}
+
+/* ========== Switches ========== */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--sauna-bg-tertiary);
+  border: 1px solid var(--sauna-border);
+  transition: var(--transition-medium);
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 3px;
+  background-color: var(--sauna-text-secondary);
+  transition: var(--transition-medium);
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background: linear-gradient(135deg, var(--sauna-fire-hot), var(--sauna-fire-warm));
+  border-color: var(--sauna-fire-hot);
+  box-shadow: var(--sauna-glow);
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+  background-color: white;
+}
+
+/* ========== Sliders (Range Inputs) ========== */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 5px;
+  background: var(--sauna-bg-tertiary);
+  outline: none;
+  margin: var(--space-md) 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--sauna-fire-hot), var(--sauna-fire-warm));
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.4);
+  transition: all var(--transition-fast);
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: var(--sauna-glow);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--sauna-fire-hot), var(--sauna-fire-warm));
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.4);
+  transition: all var(--transition-fast);
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: var(--sauna-glow);
+}
+
+/* ========== Number Inputs ========== */
+input[type="number"] {
+  background: var(--sauna-bg-tertiary);
+  border: 1px solid var(--sauna-border);
+  border-radius: var(--radius-sm);
+  color: var(--sauna-text-primary);
+  padding: var(--space-sm) var(--space-md);
+  font-size: 1rem;
+  font-family: var(--font-mono);
+  width: 80px;
+  text-align: center;
+}
+
+input[type="number"]:focus {
+  outline: none;
+  border-color: var(--sauna-fire-hot);
+  box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
+}
+
+/* ========== Climate Control (Thermostat) ========== */
+.climate-control {
+  background: var(--sauna-bg-tertiary);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  margin: var(--space-md) 0;
+}
+
+.climate-display {
+  text-align: center;
+  padding: var(--space-xl) 0;
+}
+
+.climate-display .current-temp {
+  font-size: 4rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--sauna-fire-warm);
+  text-shadow: 0 0 20px rgba(255, 184, 77, 0.4);
+  line-height: 1;
+}
+
+.climate-display .unit {
+  font-size: 2rem;
+  color: var(--sauna-text-secondary);
+}
+
+.climate-display .target-temp {
+  font-size: 1.25rem;
+  color: var(--sauna-text-secondary);
+  margin-top: var(--space-md);
+}
+
+/* ========== Alerts & Warnings ========== */
+.alert {
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-md);
+  margin: var(--space-md) 0;
+  border-left: 4px solid;
+  animation: pulse 2s infinite;
+}
+
+.alert-warning {
+  background: rgba(243, 156, 18, 0.1);
+  border-color: var(--sauna-warning);
+  color: var(--sauna-warning);
+}
+
+.alert-danger {
+  background: rgba(231, 76, 60, 0.1);
+  border-color: var(--sauna-alert);
+  color: var(--sauna-alert);
+}
+
+.alert-success {
+  background: rgba(39, 174, 96, 0.1);
+  border-color: var(--sauna-safe);
+  color: var(--sauna-safe);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ========== Statistics Display ========== */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-md);
+  margin: var(--space-md) 0;
+}
+
+.stat-item {
+  background: var(--sauna-bg-tertiary);
+  padding: var(--space-lg);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.stat-item .stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--sauna-fire-warm);
+  display: block;
+  margin-bottom: var(--space-sm);
+}
+
+.stat-item .stat-label {
+  font-size: 0.875rem;
+  color: var(--sauna-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ========== Loading States ========== */
+.loading {
+  position: relative;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid var(--sauna-fire-hot);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ========== Responsive Design ========== */
+@media (max-width: 768px) {
+  header h1 {
+    font-size: 1.5rem;
+  }
+
+  .content {
+    padding: var(--space-md);
+  }
+
+  .card {
+    padding: var(--space-md);
+  }
+
+  .entity-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+  }
+
+  .entity-row .value {
+    margin: 0;
+  }
+
+  .climate-display .current-temp {
+    font-size: 3rem;
+  }
+
+  .stat-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1025px) {
+  .content {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-lg);
+  }
+
+  .card {
+    margin-bottom: 0;
+  }
+
+  .card[data-group="sauna"],
+  .card[data-group="system"] {
+    grid-column: span 2;
+  }
+}
+
+/* ========== Utilities ========== */
+.text-center {
+  text-align: center;
+}
+
+.text-mono {
+  font-family: var(--font-mono);
+}
+
+.mt-sm { margin-top: var(--space-sm); }
+.mt-md { margin-top: var(--space-md); }
+.mt-lg { margin-top: var(--space-lg); }
+
+.mb-sm { margin-bottom: var(--space-sm); }
+.mb-md { margin-bottom: var(--space-md); }
+.mb-lg { margin-bottom: var(--space-lg); }
+
+.hidden {
+  display: none;
+}
+
+/* ========== Print Styles ========== */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  .card {
+    page-break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+
+  button, .button {
+    display: none;
+  }
+}

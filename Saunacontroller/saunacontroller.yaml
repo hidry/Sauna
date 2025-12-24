@@ -67,6 +67,9 @@ web_server:
   auth:
     username: !secret saunacontroller_webserver_user
     password: !secret saunacontroller_webserver_password
+  # Custom theme and UI enhancements
+  css_include: "./custom/sauna-theme.css"
+  js_include: "./custom/sauna-ui.js"
   sorting_groups:
     - id: group_sauna
       name: "Sauna"

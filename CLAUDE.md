@@ -120,6 +120,33 @@ Entities sind im Webserver (Port 80) gruppiert:
 5. **Statistik** - Betriebsstunden, Session-Zähler
 6. **System** - SSR-Sicherheit, Sensor-Ausfall, ESP Restart, Debug-Sensoren, Version
 
+## Custom Web Interface 🎨
+
+Der Sauna-Controller nutzt ein **modernes, touch-optimiertes Custom-Theme**:
+
+### Features
+- **Sauna-Theme:** Warme Holz- und Feuertöne, dunkler Hintergrund
+- **Mobile-First:** Responsive Design für Smartphone, Tablet, Desktop
+- **Touch-Optimiert:** Große Buttons (min. 44x44px), Ripple-Effekte
+- **Visualisierungen:**
+  - Temperatur-Gradient (blau → grün → gelb → orange → rot je nach Wert)
+  - Humidity-Anzeige mit Wassertropfen-Icon
+  - Alert-System für Warnungen (pulsierend)
+  - Timer-Formatierung (Stunden/Minuten)
+- **Animationen:** Smooth Transitions, Loading-States, Flash-Feedback
+- **Connection-Status:** Online/Offline-Indikator
+
+### Dateien
+```
+Saunacontroller/custom/
+├── sauna-theme.css     # Modernes Dark-Theme mit Sauna-Farben
+├── sauna-ui.js         # Interaktive Visualisierungen & Animationen
+└── README.md           # Vollständige Dokumentation & Anpassung
+```
+
+### Anpassung
+Details zur Anpassung von Farben, Layout und Features siehe `Saunacontroller/custom/README.md`
+
 ## Wichtige Hinweise
 
 - **Nach ESP-Neustart:** Alle Regler starten im OFF-Modus (Sicherheit), LEDs mit Lava-Rot voreingestellt
