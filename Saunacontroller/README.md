@@ -89,6 +89,8 @@ Das Webinterface zeigt alle Steuerungselemente in Gruppen:
 ## Sicherheit
 
 - **Nach Neustart:** Alle Regler starten im AUS-Zustand, LEDs mit Lava-Rot voreingestellt
+- **LED Anti-Flacker:** Ausgeschaltete LEDs werden automatisch alle 60 Sekunden
+  aufgefrischt, verhindert Flackern/Glühen nach längerer Zeit
 - **Automatische Abschaltung:** Nach 4 Stunden werden Thermostat und
   Hygrostat automatisch ausgeschaltet (Sicherheits-Timer)
 - **Restzeit-Anzeige:** Im Webinterface zeigt "Sauna Restzeit" die
