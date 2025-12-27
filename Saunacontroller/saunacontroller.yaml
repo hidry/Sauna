@@ -1071,3 +1071,18 @@ interval:
               id(infrarot2).turn_off();
             }
           }
+  # LED Anti-Flacker: Periodisches Refresh-Signal
+  # WS2812 LEDs brauchen regelmäßige Refresh-Signale auch wenn aus,
+  # sonst interpretieren sie nach Stunden akkumuliertes Rauschen als Farbbefehle
+  - interval: 60s
+    then:
+      - lambda: |-
+          // Nur refreshen wenn LEDs aus sind
+          if (!id(led_salzkristall).remote_values.is_on()) {
+            auto call = id(led_salzkristall).turn_off();
+            call.perform();
+          }
+          if (!id(led_streifen).remote_values.is_on()) {
+            auto call = id(led_streifen).turn_off();
+            call.perform();
+          }

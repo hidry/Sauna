@@ -123,6 +123,7 @@ Entities sind im Webserver (Port 80) gruppiert:
 ## Wichtige Hinweise
 
 - **Nach ESP-Neustart:** Alle Regler starten im OFF-Modus (Sicherheit), LEDs mit Lava-Rot voreingestellt
+- **LED Anti-Flacker:** WS2812 LEDs werden automatisch alle 60s refresht wenn ausgeschaltet, verhindert Flackern/Glühen nach mehreren Stunden (Home Assistant Automationen nicht mehr nötig)
 - **Statistik-Zähler:** Betriebsstunden und Sessions sind persistent (überleben Neustarts), nur laufende Sessions gehen bei Stromausfall verloren
 - **Auto-Off nach 4h:** Thermostat und Hygrostat werden automatisch abgeschaltet (Sicherheitsfeature)
 - **Infrarot Auto-Off nach 2h:** Infrarotstrahler werden nach 2 Stunden automatisch abgeschaltet (unabhängige Timer pro Strahler)
