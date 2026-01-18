@@ -84,8 +84,8 @@ Der ESP32 regelt autonom:
 
 6. **Sensor-Ausfall Erkennung** (Schutz vor defekten Sensoren)
    - **AM2320 (Sauna-Temperatur):**
-     - Überwacht: `temperatur_sauna` (Update-Interval 30s)
-     - Timeout: 90s (3 fehlende Updates) → Binary Sensor `sensor_ausfall`
+     - Überwacht: `temperatur_sauna` (Update-Interval 90s)
+     - Timeout: 270s (3 fehlende Updates) → Binary Sensor `sensor_ausfall`
      - Notabschaltung: Bei Timeout + aktiver Heizung → Ofen + Verdampfer werden abgeschaltet
    - **DS18B20 (Schaltschrank-Temperatur):**
      - Überwacht: `temperatur_steuergeraet` (Update-Interval 60s)
@@ -100,6 +100,20 @@ Der ESP32 regelt autonom:
    - Sensoren: `infrarot1_restzeit`, `infrarot2_restzeit` zeigen Restzeit in Minuten
    - Unabhängig für jeden Strahler (eigene Timer)
    - Verhindert vergessene Infrarotstrahler
+
+8. **CPU-Überlastungs-Erkennung** (Task Watchdog Schutz)
+   - Binary Sensor `cpu_ueberlastet` warnt bei Loop Time >100ms
+   - Frühwarnung vor Task Watchdog Reset (tritt bei ~15s blockierter Loop auf)
+   - Hysterese: ON bei >100ms, OFF bei <50ms
+   - Ursachen: Hängender I2C-Bus, WiFi-Probleme, blockierende Operationen
+   - Bei Auslösung: Logs prüfen, I2C-Verkabelung kontrollieren
+
+9. **Task Watchdog Logging** (Crash-Diagnose)
+   - Erkennt automatisch Task Watchdog Resets beim Boot
+   - Protokolliert im Shutdown-Log als "TASK_WATCHDOG" (Grund-Code 7)
+   - Zeigt Uptime vor Crash → hilft bei zeitlicher Korrelation
+   - Task Watchdog = ESP32 war >15s blockiert (meist I2C oder WiFi)
+   - Shutdown-Log ist persistent, überlebt Neustarts
 
 ### Home Assistant Integration
 
@@ -130,10 +144,12 @@ Entities sind im Webserver (Port 80) gruppiert:
 - **SSR-Sicherheit:** Bei Schaltschrank-Temperatur ≥60°C werden Ofen und Verdampfer automatisch abgeschaltet (Schutz für SSRs und Holzständerhaus). Nach Abkühlung (<50°C) ist manueller Neustart erforderlich - prüfe bei Auslösung die Belüftung/Kühlung der SSRs
 - **Sauna-Maximaltemperatur:** Bei Sauna-Temperatur ≥95°C werden Ofen und Verdampfer automatisch abgeschaltet (Schutz vor Reglerversagen). Nach Abkühlung (<85°C) ist manueller Neustart erforderlich
 - **Sensor-Ausfall:** Wenn ein Temperatursensor keine Werte liefert und die Heizung aktiv ist, werden Ofen und Verdampfer automatisch abgeschaltet:
-  - AM2320 (Sauna): Timeout nach >90s → Binary Sensor `sensor_ausfall`
-  - DS18B20 (Schaltschrank): Timeout nach >180s → Binary Sensor `ds18b20_ausfall` (kritisch für SSR-Sicherheit)
+  - AM2320 (Sauna): Timeout nach >270s (Update-Interval 90s) → Binary Sensor `sensor_ausfall`
+  - DS18B20 (Schaltschrank): Timeout nach >180s (Update-Interval 60s) → Binary Sensor `ds18b20_ausfall` (kritisch für SSR-Sicherheit)
   - Entwarnung erfolgt automatisch wenn Sensor wieder Daten liefert
-- **AM2320 Sensor:** Update-Interval 30s, kann bei Problemen erhöht werden
+- **AM2320 Sensor:** Update-Interval 90s (erhöht für I2C-Robustheit), I2C Timeout 100ms (Task Watchdog Schutz)
+- **CPU-Überlastung:** Binary Sensor `cpu_ueberlastet` warnt wenn Loop Time >100ms (Frühwarnung vor Task Watchdog Crash)
+- **Task Watchdog:** Wird automatisch im Shutdown-Log protokolliert (Grund-Code 7) - zeigt ESP32-Abstürze durch blockierte Operationen
 - **GPIO-Switches:** `saunaofen` und `saunaverdampfer` sind `internal: true` (nicht direkt steuerbar)
 - **secrets.yaml:** Enthält WiFi-Credentials, API-Keys etc. - niemals committen!
 
