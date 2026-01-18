@@ -30,6 +30,8 @@ esphome:
       - light.turn_off:
           id: led_streifen
           transition_length: 0s
+      # Shutdown-Log: Boot-Ereignis protokollieren
+      - script.execute: log_shutdown_boot
 
 esp32:
   board: esp32dev
@@ -88,6 +90,125 @@ web_server:
       sorting_weight: 50
 
 captive_portal:
+
+# Shutdown-Log Scripts für Protokollierung der Abschaltgründe
+# Grund-Codes: 1=BOOT, 2=AUTO_OFF_4H, 3=SSR_UEBERTEMP,
+#              4=SAUNA_UEBERTEMP, 5=AM2320_AUSFALL, 6=DS18B20_AUSFALL
+script:
+  - id: log_shutdown_boot
+    then:
+      - lambda: |-
+          int idx = id(shutdown_log_index);
+          int uptime_sec = millis() / 1000;
+          switch(idx) {
+            case 0: id(shutdown_log_0_reason) = 1; id(shutdown_log_0_uptime) = uptime_sec; break;
+            case 1: id(shutdown_log_1_reason) = 1; id(shutdown_log_1_uptime) = uptime_sec; break;
+            case 2: id(shutdown_log_2_reason) = 1; id(shutdown_log_2_uptime) = uptime_sec; break;
+            case 3: id(shutdown_log_3_reason) = 1; id(shutdown_log_3_uptime) = uptime_sec; break;
+            case 4: id(shutdown_log_4_reason) = 1; id(shutdown_log_4_uptime) = uptime_sec; break;
+            case 5: id(shutdown_log_5_reason) = 1; id(shutdown_log_5_uptime) = uptime_sec; break;
+            case 6: id(shutdown_log_6_reason) = 1; id(shutdown_log_6_uptime) = uptime_sec; break;
+            case 7: id(shutdown_log_7_reason) = 1; id(shutdown_log_7_uptime) = uptime_sec; break;
+            case 8: id(shutdown_log_8_reason) = 1; id(shutdown_log_8_uptime) = uptime_sec; break;
+            case 9: id(shutdown_log_9_reason) = 1; id(shutdown_log_9_uptime) = uptime_sec; break;
+          }
+          id(shutdown_log_index) = (idx + 1) % 10;
+          ESP_LOGI("shutdown_log", "BOOT protokolliert (Uptime: %ds)", uptime_sec);
+  - id: log_shutdown_auto_off_4h
+    then:
+      - lambda: |-
+          int idx = id(shutdown_log_index);
+          int uptime_sec = millis() / 1000;
+          switch(idx) {
+            case 0: id(shutdown_log_0_reason) = 2; id(shutdown_log_0_uptime) = uptime_sec; break;
+            case 1: id(shutdown_log_1_reason) = 2; id(shutdown_log_1_uptime) = uptime_sec; break;
+            case 2: id(shutdown_log_2_reason) = 2; id(shutdown_log_2_uptime) = uptime_sec; break;
+            case 3: id(shutdown_log_3_reason) = 2; id(shutdown_log_3_uptime) = uptime_sec; break;
+            case 4: id(shutdown_log_4_reason) = 2; id(shutdown_log_4_uptime) = uptime_sec; break;
+            case 5: id(shutdown_log_5_reason) = 2; id(shutdown_log_5_uptime) = uptime_sec; break;
+            case 6: id(shutdown_log_6_reason) = 2; id(shutdown_log_6_uptime) = uptime_sec; break;
+            case 7: id(shutdown_log_7_reason) = 2; id(shutdown_log_7_uptime) = uptime_sec; break;
+            case 8: id(shutdown_log_8_reason) = 2; id(shutdown_log_8_uptime) = uptime_sec; break;
+            case 9: id(shutdown_log_9_reason) = 2; id(shutdown_log_9_uptime) = uptime_sec; break;
+          }
+          id(shutdown_log_index) = (idx + 1) % 10;
+          ESP_LOGW("shutdown_log", "AUTO_OFF_4H protokolliert (Uptime: %ds)", uptime_sec);
+  - id: log_shutdown_ssr_uebertemp
+    then:
+      - lambda: |-
+          int idx = id(shutdown_log_index);
+          int uptime_sec = millis() / 1000;
+          switch(idx) {
+            case 0: id(shutdown_log_0_reason) = 3; id(shutdown_log_0_uptime) = uptime_sec; break;
+            case 1: id(shutdown_log_1_reason) = 3; id(shutdown_log_1_uptime) = uptime_sec; break;
+            case 2: id(shutdown_log_2_reason) = 3; id(shutdown_log_2_uptime) = uptime_sec; break;
+            case 3: id(shutdown_log_3_reason) = 3; id(shutdown_log_3_uptime) = uptime_sec; break;
+            case 4: id(shutdown_log_4_reason) = 3; id(shutdown_log_4_uptime) = uptime_sec; break;
+            case 5: id(shutdown_log_5_reason) = 3; id(shutdown_log_5_uptime) = uptime_sec; break;
+            case 6: id(shutdown_log_6_reason) = 3; id(shutdown_log_6_uptime) = uptime_sec; break;
+            case 7: id(shutdown_log_7_reason) = 3; id(shutdown_log_7_uptime) = uptime_sec; break;
+            case 8: id(shutdown_log_8_reason) = 3; id(shutdown_log_8_uptime) = uptime_sec; break;
+            case 9: id(shutdown_log_9_reason) = 3; id(shutdown_log_9_uptime) = uptime_sec; break;
+          }
+          id(shutdown_log_index) = (idx + 1) % 10;
+          ESP_LOGW("shutdown_log", "SSR_UEBERTEMP protokolliert (Uptime: %ds)", uptime_sec);
+  - id: log_shutdown_sauna_uebertemp
+    then:
+      - lambda: |-
+          int idx = id(shutdown_log_index);
+          int uptime_sec = millis() / 1000;
+          switch(idx) {
+            case 0: id(shutdown_log_0_reason) = 4; id(shutdown_log_0_uptime) = uptime_sec; break;
+            case 1: id(shutdown_log_1_reason) = 4; id(shutdown_log_1_uptime) = uptime_sec; break;
+            case 2: id(shutdown_log_2_reason) = 4; id(shutdown_log_2_uptime) = uptime_sec; break;
+            case 3: id(shutdown_log_3_reason) = 4; id(shutdown_log_3_uptime) = uptime_sec; break;
+            case 4: id(shutdown_log_4_reason) = 4; id(shutdown_log_4_uptime) = uptime_sec; break;
+            case 5: id(shutdown_log_5_reason) = 4; id(shutdown_log_5_uptime) = uptime_sec; break;
+            case 6: id(shutdown_log_6_reason) = 4; id(shutdown_log_6_uptime) = uptime_sec; break;
+            case 7: id(shutdown_log_7_reason) = 4; id(shutdown_log_7_uptime) = uptime_sec; break;
+            case 8: id(shutdown_log_8_reason) = 4; id(shutdown_log_8_uptime) = uptime_sec; break;
+            case 9: id(shutdown_log_9_reason) = 4; id(shutdown_log_9_uptime) = uptime_sec; break;
+          }
+          id(shutdown_log_index) = (idx + 1) % 10;
+          ESP_LOGW("shutdown_log", "SAUNA_UEBERTEMP protokolliert (Uptime: %ds)", uptime_sec);
+  - id: log_shutdown_am2320_ausfall
+    then:
+      - lambda: |-
+          int idx = id(shutdown_log_index);
+          int uptime_sec = millis() / 1000;
+          switch(idx) {
+            case 0: id(shutdown_log_0_reason) = 5; id(shutdown_log_0_uptime) = uptime_sec; break;
+            case 1: id(shutdown_log_1_reason) = 5; id(shutdown_log_1_uptime) = uptime_sec; break;
+            case 2: id(shutdown_log_2_reason) = 5; id(shutdown_log_2_uptime) = uptime_sec; break;
+            case 3: id(shutdown_log_3_reason) = 5; id(shutdown_log_3_uptime) = uptime_sec; break;
+            case 4: id(shutdown_log_4_reason) = 5; id(shutdown_log_4_uptime) = uptime_sec; break;
+            case 5: id(shutdown_log_5_reason) = 5; id(shutdown_log_5_uptime) = uptime_sec; break;
+            case 6: id(shutdown_log_6_reason) = 5; id(shutdown_log_6_uptime) = uptime_sec; break;
+            case 7: id(shutdown_log_7_reason) = 5; id(shutdown_log_7_uptime) = uptime_sec; break;
+            case 8: id(shutdown_log_8_reason) = 5; id(shutdown_log_8_uptime) = uptime_sec; break;
+            case 9: id(shutdown_log_9_reason) = 5; id(shutdown_log_9_uptime) = uptime_sec; break;
+          }
+          id(shutdown_log_index) = (idx + 1) % 10;
+          ESP_LOGW("shutdown_log", "AM2320_AUSFALL protokolliert (Uptime: %ds)", uptime_sec);
+  - id: log_shutdown_ds18b20_ausfall
+    then:
+      - lambda: |-
+          int idx = id(shutdown_log_index);
+          int uptime_sec = millis() / 1000;
+          switch(idx) {
+            case 0: id(shutdown_log_0_reason) = 6; id(shutdown_log_0_uptime) = uptime_sec; break;
+            case 1: id(shutdown_log_1_reason) = 6; id(shutdown_log_1_uptime) = uptime_sec; break;
+            case 2: id(shutdown_log_2_reason) = 6; id(shutdown_log_2_uptime) = uptime_sec; break;
+            case 3: id(shutdown_log_3_reason) = 6; id(shutdown_log_3_uptime) = uptime_sec; break;
+            case 4: id(shutdown_log_4_reason) = 6; id(shutdown_log_4_uptime) = uptime_sec; break;
+            case 5: id(shutdown_log_5_reason) = 6; id(shutdown_log_5_uptime) = uptime_sec; break;
+            case 6: id(shutdown_log_6_reason) = 6; id(shutdown_log_6_uptime) = uptime_sec; break;
+            case 7: id(shutdown_log_7_reason) = 6; id(shutdown_log_7_uptime) = uptime_sec; break;
+            case 8: id(shutdown_log_8_reason) = 6; id(shutdown_log_8_uptime) = uptime_sec; break;
+            case 9: id(shutdown_log_9_reason) = 6; id(shutdown_log_9_uptime) = uptime_sec; break;
+          }
+          id(shutdown_log_index) = (idx + 1) % 10;
+          ESP_LOGW("shutdown_log", "DS18B20_AUSFALL protokolliert (Uptime: %ds)", uptime_sec);
 
 switch:
   - platform: gpio
@@ -636,6 +757,73 @@ output:
       allow_other_uses: true
 
 text_sensor:
+  # Shutdown-Log: Zeigt die letzten 10 Abschaltungen mit Grund und Uptime
+  - platform: template
+    id: shutdown_log_display
+    name: "Abschaltungs-Log"
+    icon: "mdi:history"
+    update_interval: 60s
+    web_server:
+      sorting_group_id: group_system
+      sorting_weight: 12
+    lambda: |-
+      // Reason-Code zu lesbarem Text
+      auto reason_text = [](int reason) -> const char* {
+        switch(reason) {
+          case 1: return "BOOT";
+          case 2: return "AUTO_OFF_4H";
+          case 3: return "SSR_UEBERTEMP";
+          case 4: return "SAUNA_UEBERTEMP";
+          case 5: return "AM2320_AUSFALL";
+          case 6: return "DS18B20_AUSFALL";
+          default: return "";
+        }
+      };
+
+      // Uptime formatieren (Sekunden -> "Xh XXm")
+      auto format_uptime = [](int seconds) -> std::string {
+        int hours = seconds / 3600;
+        int minutes = (seconds % 3600) / 60;
+        char buf[16];
+        snprintf(buf, sizeof(buf), "%dh %02dm", hours, minutes);
+        return std::string(buf);
+      };
+
+      // Alle 10 Einträge in Arrays sammeln (für Ringpuffer-Sortierung)
+      int reasons[10] = {
+        id(shutdown_log_0_reason), id(shutdown_log_1_reason),
+        id(shutdown_log_2_reason), id(shutdown_log_3_reason),
+        id(shutdown_log_4_reason), id(shutdown_log_5_reason),
+        id(shutdown_log_6_reason), id(shutdown_log_7_reason),
+        id(shutdown_log_8_reason), id(shutdown_log_9_reason)
+      };
+      int uptimes[10] = {
+        id(shutdown_log_0_uptime), id(shutdown_log_1_uptime),
+        id(shutdown_log_2_uptime), id(shutdown_log_3_uptime),
+        id(shutdown_log_4_uptime), id(shutdown_log_5_uptime),
+        id(shutdown_log_6_uptime), id(shutdown_log_7_uptime),
+        id(shutdown_log_8_uptime), id(shutdown_log_9_uptime)
+      };
+
+      std::string result = "";
+      int current_idx = id(shutdown_log_index);
+      int count = 0;
+
+      // Vom neuesten zum ältesten Eintrag iterieren
+      for (int i = 0; i < 10; i++) {
+        int idx = (current_idx - 1 - i + 10) % 10;
+        if (reasons[idx] != 0) {
+          if (count > 0) result += "\n";
+          result += "[" + format_uptime(uptimes[idx]) + "] ";
+          result += reason_text(reasons[idx]);
+          count++;
+        }
+      }
+
+      if (count == 0) {
+        return std::string("Keine Einträge");
+      }
+      return result;
   - platform: version
     name: "ESPHome Version"
     web_server:
@@ -849,6 +1037,94 @@ globals:
     type: unsigned long
     restore_value: false
     initial_value: '0'
+  # Shutdown-Log: Ringpuffer für Abschaltungs-Protokollierung
+  # Speichert die letzten 10 Abschaltungen mit Grund und Uptime
+  # Grund-Codes: 0=LEER, 1=BOOT, 2=AUTO_OFF_4H, 3=SSR_UEBERTEMP,
+  #              4=SAUNA_UEBERTEMP, 5=AM2320_AUSFALL, 6=DS18B20_AUSFALL
+  - id: shutdown_log_index
+    type: int
+    restore_value: true
+    initial_value: '0'
+  - id: shutdown_log_0_reason
+    type: int
+    restore_value: true
+    initial_value: '0'
+  - id: shutdown_log_0_uptime
+    type: int
+    restore_value: true
+    initial_value: '0'
+  - id: shutdown_log_1_reason
+    type: int
+    restore_value: true
+    initial_value: '0'
+  - id: shutdown_log_1_uptime
+    type: int
+    restore_value: true
+    initial_value: '0'
+  - id: shutdown_log_2_reason
+    type: int
+    restore_value: true
+    initial_value: '0'
+  - id: shutdown_log_2_uptime
+    type: int
+    restore_value: true
+    initial_value: '0'
+  - id: shutdown_log_3_reason
+    type: int
+    restore_value: true
+    initial_value: '0'
+  - id: shutdown_log_3_uptime
+    type: int
+    restore_value: true
+    initial_value: '0'
+  - id: shutdown_log_4_reason
+    type: int
+    restore_value: true
+    initial_value: '0'
+  - id: shutdown_log_4_uptime
+    type: int
+    restore_value: true
+    initial_value: '0'
+  - id: shutdown_log_5_reason
+    type: int
+    restore_value: true
+    initial_value: '0'
+  - id: shutdown_log_5_uptime
+    type: int
+    restore_value: true
+    initial_value: '0'
+  - id: shutdown_log_6_reason
+    type: int
+    restore_value: true
+    initial_value: '0'
+  - id: shutdown_log_6_uptime
+    type: int
+    restore_value: true
+    initial_value: '0'
+  - id: shutdown_log_7_reason
+    type: int
+    restore_value: true
+    initial_value: '0'
+  - id: shutdown_log_7_uptime
+    type: int
+    restore_value: true
+    initial_value: '0'
+  - id: shutdown_log_8_reason
+    type: int
+    restore_value: true
+    initial_value: '0'
+  - id: shutdown_log_8_uptime
+    type: int
+    restore_value: true
+    initial_value: '0'
+  - id: shutdown_log_9_reason
+    type: int
+    restore_value: true
+    initial_value: '0'
+  - id: shutdown_log_9_uptime
+    type: int
+    restore_value: true
+    initial_value: '0'
 
 interval:
   # Hygrostat-Regelung
@@ -892,6 +1168,7 @@ interval:
             unsigned long elapsed = millis() - id(sauna_session_start_time);
             if (elapsed >= 4UL * 60 * 60 * 1000) {
               // 4h erreicht - Abschalten
+              id(log_shutdown_auto_off_4h).execute();
               auto call = id(sauna_thermostat).make_call();
               call.set_mode("OFF");
               call.perform();
@@ -912,6 +1189,7 @@ interval:
           // Kritische Temperatur: 60°C - Ofen und Verdampfer abschalten
           if (temp >= 60.0 && !id(ssr_notabschaltung_aktiv)) {
             ESP_LOGW("ssr_safety", "KRITISCH: Schaltschrank %.1f°C - Notabschaltung!", temp);
+            id(log_shutdown_ssr_uebertemp).execute();
             id(ssr_notabschaltung_aktiv) = true;
 
             // Thermostat abschalten
@@ -941,6 +1219,7 @@ interval:
           // Kritische Temperatur: 95°C - Ofen abschalten
           if (temp >= 95.0 && !id(sauna_notabschaltung_aktiv)) {
             ESP_LOGW("sauna_safety", "KRITISCH: Sauna %.1f°C - Notabschaltung!", temp);
+            id(log_shutdown_sauna_uebertemp).execute();
             id(sauna_notabschaltung_aktiv) = true;
 
             // Thermostat abschalten
@@ -985,6 +1264,7 @@ interval:
           unsigned long timeout = 180000;  // 180 Sekunden (angepasst an 60s Update-Interval)
           if ((jetzt - letztes_update) > timeout && !id(sensor_ausfall_aktiv)) {
             ESP_LOGW("sensor_safety", "KRITISCH: Kein Temperaturwert seit >180s - Notabschaltung!");
+            id(log_shutdown_am2320_ausfall).execute();
             id(sensor_ausfall_aktiv) = true;
 
             // Thermostat abschalten
@@ -1030,6 +1310,7 @@ interval:
           unsigned long timeout = 180000;  // 180 Sekunden (3x 60s Standard-Interval)
           if ((jetzt - letztes_update) > timeout && !id(ds18b20_ausfall_aktiv)) {
             ESP_LOGW("ds18b20_safety", "KRITISCH: Kein Schaltschrank-Temperaturwert seit >180s - Notabschaltung!");
+            id(log_shutdown_ds18b20_ausfall).execute();
             id(ds18b20_ausfall_aktiv) = true;
 
             // Thermostat abschalten
