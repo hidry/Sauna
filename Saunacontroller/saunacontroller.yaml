@@ -30,8 +30,19 @@ esphome:
       - light.turn_off:
           id: led_streifen
           transition_length: 0s
-      # Shutdown-Log: Boot-Ereignis protokollieren
-      - script.execute: log_shutdown_boot
+      # Shutdown-Log: Reset-Grund erkennen und protokollieren
+      - lambda: |-
+          #include "esp_system.h"
+          esp_reset_reason_t reason = esp_reset_reason();
+          // ESP_RST_TASK_WDT = 5 (Task Watchdog Reset)
+          // ESP_RST_INT_WDT = 4 (Interrupt Watchdog Reset)
+          if (reason == ESP_RST_TASK_WDT || reason == ESP_RST_INT_WDT) {
+            ESP_LOGE("boot", "!!! TASK WATCHDOG RESET erkannt - ESP32 war blockiert !!!");
+            id(log_shutdown_task_watchdog).execute();
+          } else {
+            // Normaler Boot (Power-On, Software-Reset, etc.)
+            id(log_shutdown_boot).execute();
+          }
 
 esp32:
   board: esp32dev
@@ -93,7 +104,7 @@ captive_portal:
 
 # Shutdown-Log Scripts für Protokollierung der Abschaltgründe
 # Grund-Codes: 1=BOOT, 2=AUTO_OFF_4H, 3=SSR_UEBERTEMP,
-#              4=SAUNA_UEBERTEMP, 5=AM2320_AUSFALL, 6=DS18B20_AUSFALL
+#              4=SAUNA_UEBERTEMP, 5=AM2320_AUSFALL, 6=DS18B20_AUSFALL, 7=TASK_WATCHDOG
 script:
   - id: log_shutdown_boot
     then:
@@ -209,6 +220,25 @@ script:
           }
           id(shutdown_log_index) = (idx + 1) % 10;
           ESP_LOGW("shutdown_log", "DS18B20_AUSFALL protokolliert (Uptime: %ds)", uptime_sec);
+  - id: log_shutdown_task_watchdog
+    then:
+      - lambda: |-
+          int idx = id(shutdown_log_index);
+          int uptime_sec = millis() / 1000;
+          switch(idx) {
+            case 0: id(shutdown_log_0_reason) = 7; id(shutdown_log_0_uptime) = uptime_sec; break;
+            case 1: id(shutdown_log_1_reason) = 7; id(shutdown_log_1_uptime) = uptime_sec; break;
+            case 2: id(shutdown_log_2_reason) = 7; id(shutdown_log_2_uptime) = uptime_sec; break;
+            case 3: id(shutdown_log_3_reason) = 7; id(shutdown_log_3_uptime) = uptime_sec; break;
+            case 4: id(shutdown_log_4_reason) = 7; id(shutdown_log_4_uptime) = uptime_sec; break;
+            case 5: id(shutdown_log_5_reason) = 7; id(shutdown_log_5_uptime) = uptime_sec; break;
+            case 6: id(shutdown_log_6_reason) = 7; id(shutdown_log_6_uptime) = uptime_sec; break;
+            case 7: id(shutdown_log_7_reason) = 7; id(shutdown_log_7_uptime) = uptime_sec; break;
+            case 8: id(shutdown_log_8_reason) = 7; id(shutdown_log_8_uptime) = uptime_sec; break;
+            case 9: id(shutdown_log_9_reason) = 7; id(shutdown_log_9_uptime) = uptime_sec; break;
+          }
+          id(shutdown_log_index) = (idx + 1) % 10;
+          ESP_LOGE("shutdown_log", "TASK_WATCHDOG protokolliert (Uptime: %ds)", uptime_sec);
 
 switch:
   - platform: gpio
@@ -376,6 +406,31 @@ binary_sensor:
     lambda: |-
       return id(ds18b20_ausfall_aktiv);
 
+  # CPU-Überlastungs-Warnung: Loop Time >100ms deutet auf blockierende Operationen
+  # Frühwarnung vor Task Watchdog Reset (tritt bei ~15s blockierter Loop auf)
+  - platform: template
+    id: cpu_ueberlastet
+    name: "CPU Überlastet"
+    device_class: problem
+    icon: "mdi:cpu-32-bit"
+    web_server:
+      sorting_group_id: group_system
+      sorting_weight: 19
+    lambda: |-
+      if (!id(loop_time_sensor).has_state()) {
+        return false;
+      }
+      float loop_ms = id(loop_time_sensor).state;
+      // Warnung bei >100ms Loop Time (deutet auf blockierende I2C/WiFi-Operationen)
+      // Task Watchdog schlägt bei ~15000ms zu, >100ms ist Frühwarnung
+      if (loop_ms > 100.0) {
+        return true;
+      } else if (loop_ms < 50.0) {
+        return false;
+      }
+      // Zwischen 50-100ms: Zustand beibehalten (Hysterese)
+      return id(cpu_ueberlastet).state;
+
 one_wire:
   - pin: GPIO23
     platform: gpio
@@ -389,7 +444,7 @@ i2c:
     scl: GPIO32
     scan: False
     frequency: 50kHz  # Reduziert von Standard 100kHz für bessere EMI-Resistenz
-    timeout: 50ms     # Expliziter Timeout für robustere Kommunikation
+    timeout: 100ms    # Erhöht auf 100ms um Task Watchdog durch hängenden Sensor zu vermeiden
 
 sensor:
   - platform: dallas_temp
@@ -425,7 +480,7 @@ sensor:
       web_server:
         sorting_group_id: group_verdampfer
         sorting_weight: 30
-    update_interval: 60s  # Erhöht von 30s für weniger I2C-Bus-Traffic
+    update_interval: 90s  # Erhöht auf 90s um I2C-Bus-Last zu reduzieren (Task Watchdog Schutz)
   - platform: uptime
     type: seconds
     name: "Uptime Sensor"
@@ -444,6 +499,7 @@ sensor:
         sorting_group_id: group_system
         sorting_weight: 50
     loop_time:
+      id: loop_time_sensor
       name: "Loop Time"
       web_server:
         sorting_group_id: group_system
@@ -776,6 +832,7 @@ text_sensor:
           case 4: return "SAUNA_UEBERTEMP";
           case 5: return "AM2320_AUSFALL";
           case 6: return "DS18B20_AUSFALL";
+          case 7: return "TASK_WATCHDOG";
           default: return "";
         }
       };
@@ -1040,7 +1097,7 @@ globals:
   # Shutdown-Log: Ringpuffer für Abschaltungs-Protokollierung
   # Speichert die letzten 10 Abschaltungen mit Grund und Uptime
   # Grund-Codes: 0=LEER, 1=BOOT, 2=AUTO_OFF_4H, 3=SSR_UEBERTEMP,
-  #              4=SAUNA_UEBERTEMP, 5=AM2320_AUSFALL, 6=DS18B20_AUSFALL
+  #              4=SAUNA_UEBERTEMP, 5=AM2320_AUSFALL, 6=DS18B20_AUSFALL, 7=TASK_WATCHDOG
   - id: shutdown_log_index
     type: int
     restore_value: true
@@ -1252,7 +1309,7 @@ interval:
             return;
           }
 
-          // Prüfen ob Sensor-Daten zu alt (>180s = 3x Update-Interval von 60s)
+          // Prüfen ob Sensor-Daten zu alt (>270s = 3x Update-Interval von 90s)
           unsigned long jetzt = millis();
           unsigned long letztes_update = id(letzter_temperatur_update);
 
@@ -1261,9 +1318,9 @@ interval:
             return;
           }
 
-          unsigned long timeout = 180000;  // 180 Sekunden (angepasst an 60s Update-Interval)
+          unsigned long timeout = 270000;  // 270 Sekunden (angepasst an 90s Update-Interval)
           if ((jetzt - letztes_update) > timeout && !id(sensor_ausfall_aktiv)) {
-            ESP_LOGW("sensor_safety", "KRITISCH: Kein Temperaturwert seit >180s - Notabschaltung!");
+            ESP_LOGW("sensor_safety", "KRITISCH: Kein Temperaturwert seit >270s - Notabschaltung!");
             id(log_shutdown_am2320_ausfall).execute();
             id(sensor_ausfall_aktiv) = true;
 
