@@ -644,7 +644,9 @@ sensor:
     unit_of_measurement: "h"
     accuracy_decimals: 1
     lambda: |-
-      return id(infrarot2_betriebsstunden);
+      float wert = id(infrarot2_betriebsstunden);
+      ESP_LOGD("infrarot2_sensor", "Betriebsstunden-Sensor Update: %.1f h", wert);
+      return wert;
     update_interval: 60s
     web_server:
       sorting_group_id: group_statistik
@@ -705,12 +707,17 @@ light:
       - lambda: |-
           id(infrarot2_start_ms) = millis();
           id(infrarot2_sessions) += 1;
+          ESP_LOGI("infrarot2", "Eingeschaltet - start_ms=%lu, sessions=%d", id(infrarot2_start_ms), id(infrarot2_sessions));
     on_turn_off:
       - lambda: |-
           if (id(infrarot2_start_ms) > 0) {
             unsigned long duration_ms = millis() - id(infrarot2_start_ms);
-            id(infrarot2_betriebsstunden) += duration_ms / 3600000.0f;
+            float hours = duration_ms / 3600000.0f;
+            id(infrarot2_betriebsstunden) += hours;
+            ESP_LOGI("infrarot2", "Ausgeschaltet - duration_ms=%lu, hours=%.3f, total=%.1f", duration_ms, hours, id(infrarot2_betriebsstunden));
             id(infrarot2_start_ms) = 0;
+          } else {
+            ESP_LOGW("infrarot2", "Ausgeschaltet - FEHLER: start_ms war 0!");
           }
   - platform: esp32_rmt_led_strip
     id: led_salzkristall
@@ -1405,7 +1412,7 @@ interval:
           if (id(infrarot2_start_ms) != 0) {
             unsigned long elapsed = jetzt - id(infrarot2_start_ms);
             if (elapsed >= max_time) {
-              ESP_LOGI("infrarot_safety", "Auto-Off: Infrarot 2 nach 2h abgeschaltet");
+              ESP_LOGI("infrarot_safety", "Auto-Off: Infrarot 2 nach 2h abgeschaltet (start_ms=%lu, elapsed=%lu)", id(infrarot2_start_ms), elapsed);
               id(infrarot2).turn_off();
             }
           }
