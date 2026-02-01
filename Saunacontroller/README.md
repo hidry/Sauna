@@ -22,8 +22,8 @@ ESP32-basierte Sauna-Steuerung mit ESPHome. Regelt Temperatur, Luftfeuchtigkeit,
 | Zero-Cross Detection | GPIO5 | AC-Dimmer |
 | LED Salzkristall | GPIO2 | WS2812 (16 LEDs) |
 | LED Streifen | GPIO15 | WS2812 (213 LEDs) |
-| AM2320 SDA | GPIO33 | Temperatur/Feuchte |
-| AM2320 SCL | GPIO32 | Temperatur/Feuchte |
+| SHT30 SDA | GPIO33 | Temperatur/Feuchte |
+| SHT30 SCL | GPIO32 | Temperatur/Feuchte |
 | Dallas DS18B20 | GPIO23 | Temperatur Steuergerät |
 
 ## Installation
@@ -118,9 +118,9 @@ light.saunacontroller_led_streifen
 
 ## Troubleshooting
 
-### AM2320 Sensor liefert keine Werte
+### SHT30 Sensor liefert keine Werte
 - I²C-Verbindung prüfen (SDA/SCL)
-- Sensor benötigt angeschlossen zu sein beim Booten
+- I2C-Adresse: 0x44 (Standard)
 
 ### Webinterface nicht erreichbar
 - Fallback-AP prüfen: "Sauna-Fallback" WLAN
