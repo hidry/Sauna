@@ -57,5 +57,5 @@ Bedienung über Webinterface: `http://saunacontroller.local`
 
 Das ESP32-Board ist wegen besserer Konnektivität auf eine Leiterplatte mit Schraubanschlussklemmen gelötet:
 
-<img width="786" height="341" alt="image" src="https://github.com/user-attachments/assets/79d60207-97eb-4087-b95c-302b3d4d3e65" />
+<img width="786" height="341" alt="image" src="https://github.com/hidry/Sauna/raw/9fe16728f80347630e3718ba037a6c098c79dff4/Saunacontroller/Pics/2026-02-06%20161008.png" />
 
