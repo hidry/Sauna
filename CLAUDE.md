@@ -24,7 +24,7 @@ Sauna/
 
 - **Hardware:** ESP32 (esp32dev Board)
 - **Framework:** ESPHome mit Arduino
-- **Sensoren:** AM2320 (Temperatur/Luftfeuchte), Dallas DS18B20
+- **Sensoren:** SHT30 (Temperatur/Luftfeuchte, IP67 Edelstahl), Dallas DS18B20
 - **Aktoren:** GPIO-Relais (Ofen, Verdampfer), AC-Dimmer (Infrarot), WS2812 LEDs
 
 ## Build & Deployment
@@ -51,13 +51,13 @@ esphome upload Saunacontroller/saunacontroller.yaml  # Flashen
 Der ESP32 regelt autonom:
 
 1. **Thermostat** (ESPHome Climate Component)
-   - Sensor: `temperatur_sauna` (AM2320)
+   - Sensor: `temperatur_sauna` (SHT30)
    - Aktor: `saunaofen` (GPIO16, internal)
    - Hysterese: ±3°C (schont Relais, passt zur Trägheit der Sauna)
    - Default: 80°C, startet im OFF-Modus
 
 2. **Hygrostat** (Custom Implementation)
-   - Sensor: `luftfeuchte_sauna` (AM2320)
+   - Sensor: `luftfeuchte_sauna` (SHT30)
    - Aktor: `saunaverdampfer` (GPIO17, internal)
    - Hysterese: ±3%
    - Default: 50%, Interval-basierte Regelung (10s)
@@ -76,16 +76,16 @@ Der ESP32 regelt autonom:
    - Schützt SSRs, Elektronik und Holzständerhaus vor Überhitzung/Brand
 
 5. **Sauna-Maximaltemperatur** (Übertemperaturschutz Sauna-Raum)
-   - Sensor: `temperatur_sauna` (AM2320)
+   - Sensor: `temperatur_sauna` (SHT30)
    - Warnung: >90°C → Binary Sensor `sauna_uebertemperatur` (für HA-Automations)
    - Notabschaltung: ≥95°C → Ofen + Verdampfer werden sofort abgeschaltet
    - Entwarnung: <85°C → Notabschaltung aufgehoben, manueller Neustart erforderlich
    - Schützt vor Reglerversagen und zu hohen Temperaturen
 
 6. **Sensor-Ausfall Erkennung** (Schutz vor defekten Sensoren)
-   - **AM2320 (Sauna-Temperatur):**
-     - Überwacht: `temperatur_sauna` (Update-Interval 90s)
-     - Timeout: 270s (3 fehlende Updates) → Binary Sensor `sensor_ausfall`
+   - **SHT30 (Sauna-Temperatur):**
+     - Überwacht: `temperatur_sauna` (Update-Interval 30s)
+     - Timeout: 90s (3 fehlende Updates) → Binary Sensor `sensor_ausfall`
      - Notabschaltung: Bei Timeout + aktiver Heizung → Ofen + Verdampfer werden abgeschaltet
    - **DS18B20 (Schaltschrank-Temperatur):**
      - Überwacht: `temperatur_steuergeraet` (Update-Interval 60s)
@@ -144,10 +144,10 @@ Entities sind im Webserver (Port 80) gruppiert:
 - **SSR-Sicherheit:** Bei Schaltschrank-Temperatur ≥60°C werden Ofen und Verdampfer automatisch abgeschaltet (Schutz für SSRs und Holzständerhaus). Nach Abkühlung (<50°C) ist manueller Neustart erforderlich - prüfe bei Auslösung die Belüftung/Kühlung der SSRs
 - **Sauna-Maximaltemperatur:** Bei Sauna-Temperatur ≥95°C werden Ofen und Verdampfer automatisch abgeschaltet (Schutz vor Reglerversagen). Nach Abkühlung (<85°C) ist manueller Neustart erforderlich
 - **Sensor-Ausfall:** Wenn ein Temperatursensor keine Werte liefert und die Heizung aktiv ist, werden Ofen und Verdampfer automatisch abgeschaltet:
-  - AM2320 (Sauna): Timeout nach >270s (Update-Interval 90s) → Binary Sensor `sensor_ausfall`
+  - SHT30 (Sauna): Timeout nach >90s (Update-Interval 30s) → Binary Sensor `sensor_ausfall`
   - DS18B20 (Schaltschrank): Timeout nach >180s (Update-Interval 60s) → Binary Sensor `ds18b20_ausfall` (kritisch für SSR-Sicherheit)
   - Entwarnung erfolgt automatisch wenn Sensor wieder Daten liefert
-- **AM2320 Sensor:** Update-Interval 90s (erhöht für I2C-Robustheit), I2C Timeout 100ms (Task Watchdog Schutz)
+- **SHT30 Sensor:** Update-Interval 30s, IP67 Edelstahlgehäuse, I2C-Adresse 0x44
 - **CPU-Überlastung:** Binary Sensor `cpu_ueberlastet` warnt wenn Loop Time >100ms (Frühwarnung vor Task Watchdog Crash)
 - **Task Watchdog:** Wird automatisch im Shutdown-Log protokolliert (Grund-Code 7) - zeigt ESP32-Abstürze durch blockierte Operationen
 - **GPIO-Switches:** `saunaofen` und `saunaverdampfer` sind `internal: true` (nicht direkt steuerbar)

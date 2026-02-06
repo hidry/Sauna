@@ -104,7 +104,7 @@ captive_portal:
 
 # Shutdown-Log Scripts für Protokollierung der Abschaltgründe
 # Grund-Codes: 1=BOOT, 2=AUTO_OFF_4H, 3=SSR_UEBERTEMP,
-#              4=SAUNA_UEBERTEMP, 5=AM2320_AUSFALL, 6=DS18B20_AUSFALL, 7=TASK_WATCHDOG
+#              4=SAUNA_UEBERTEMP, 5=SHT30_AUSFALL, 6=DS18B20_AUSFALL, 7=TASK_WATCHDOG
 script:
   - id: log_shutdown_boot
     then:
@@ -182,7 +182,7 @@ script:
           }
           id(shutdown_log_index) = (idx + 1) % 10;
           ESP_LOGW("shutdown_log", "SAUNA_UEBERTEMP protokolliert (Uptime: %ds)", uptime_sec);
-  - id: log_shutdown_am2320_ausfall
+  - id: log_shutdown_sht30_ausfall
     then:
       - lambda: |-
           int idx = id(shutdown_log_index);
@@ -200,7 +200,7 @@ script:
             case 9: id(shutdown_log_9_reason) = 5; id(shutdown_log_9_uptime) = uptime_sec; break;
           }
           id(shutdown_log_index) = (idx + 1) % 10;
-          ESP_LOGW("shutdown_log", "AM2320_AUSFALL protokolliert (Uptime: %ds)", uptime_sec);
+          ESP_LOGW("shutdown_log", "SHT30_AUSFALL protokolliert (Uptime: %ds)", uptime_sec);
   - id: log_shutdown_ds18b20_ausfall
     then:
       - lambda: |-
@@ -380,7 +380,7 @@ binary_sensor:
     lambda: |-
       return id(sauna_notabschaltung_aktiv);
 
-  # Sensor-Ausfall Erkennung: AM2320 Temperatursensor liefert keine Werte
+  # Sensor-Ausfall Erkennung: SHT30 Temperatursensor liefert keine Werte
   # Schützt vor defekten oder abgesteckten Sensoren
   - platform: template
     id: sensor_ausfall
@@ -458,10 +458,9 @@ sensor:
       then:
         - lambda: |-
             id(letzter_ds18b20_update) = millis();
-  - platform: am2320
+  - platform: sht3xd
     i2c_id: i2c_bus_a
-    setup_priority: -1000
-    address: 0x5C
+    address: 0x44
     temperature:
       id: temperatur_sauna
       name: "Temperatur Sauna"
@@ -480,7 +479,7 @@ sensor:
       web_server:
         sorting_group_id: group_verdampfer
         sorting_weight: 30
-    update_interval: 90s  # Erhöht auf 90s um I2C-Bus-Last zu reduzieren (Task Watchdog Schutz)
+    update_interval: 30s
   - platform: uptime
     type: seconds
     name: "Uptime Sensor"
@@ -830,7 +829,7 @@ text_sensor:
           case 2: return "AUTO_OFF_4H";
           case 3: return "SSR_UEBERTEMP";
           case 4: return "SAUNA_UEBERTEMP";
-          case 5: return "AM2320_AUSFALL";
+          case 5: return "SHT30_AUSFALL";
           case 6: return "DS18B20_AUSFALL";
           case 7: return "TASK_WATCHDOG";
           default: return "";
@@ -1003,7 +1002,7 @@ globals:
     type: bool
     restore_value: false
     initial_value: 'false'
-  # Sensor-Ausfall Erkennung (AM2320 Sauna-Temperatur)
+  # Sensor-Ausfall Erkennung (SHT30 Sauna-Temperatur)
   - id: sensor_ausfall_aktiv
     type: bool
     restore_value: false
@@ -1097,7 +1096,7 @@ globals:
   # Shutdown-Log: Ringpuffer für Abschaltungs-Protokollierung
   # Speichert die letzten 10 Abschaltungen mit Grund und Uptime
   # Grund-Codes: 0=LEER, 1=BOOT, 2=AUTO_OFF_4H, 3=SSR_UEBERTEMP,
-  #              4=SAUNA_UEBERTEMP, 5=AM2320_AUSFALL, 6=DS18B20_AUSFALL, 7=TASK_WATCHDOG
+  #              4=SAUNA_UEBERTEMP, 5=SHT30_AUSFALL, 6=DS18B20_AUSFALL, 7=TASK_WATCHDOG
   - id: shutdown_log_index
     type: int
     restore_value: true
@@ -1293,8 +1292,8 @@ interval:
             ESP_LOGI("sauna_safety", "Entwarnung: Sauna %.1f°C - Notabschaltung aufgehoben", temp);
             id(sauna_notabschaltung_aktiv) = false;
           }
-  # Sensor-Ausfall Erkennung: Kein Temperaturwert seit 90s
-  # Schützt vor defekten oder abgesteckten Sensoren (AM2320 Update-Interval: 30s)
+  # Sensor-Ausfall Erkennung: Kein Temperaturwert seit 90s (3x 30s SHT30 Update-Interval)
+  # Schützt vor defekten oder abgesteckten Sensoren (SHT30 Update-Interval: 30s)
   - interval: 10s
     then:
       - lambda: |-
@@ -1318,10 +1317,10 @@ interval:
             return;
           }
 
-          unsigned long timeout = 270000;  // 270 Sekunden (angepasst an 90s Update-Interval)
+          unsigned long timeout = 90000;  // 90 Sekunden (3x 30s Update-Interval)
           if ((jetzt - letztes_update) > timeout && !id(sensor_ausfall_aktiv)) {
-            ESP_LOGW("sensor_safety", "KRITISCH: Kein Temperaturwert seit >270s - Notabschaltung!");
-            id(log_shutdown_am2320_ausfall).execute();
+            ESP_LOGW("sensor_safety", "KRITISCH: Kein Temperaturwert seit >90s - Notabschaltung!");
+            id(log_shutdown_sht30_ausfall).execute();
             id(sensor_ausfall_aktiv) = true;
 
             // Thermostat abschalten
